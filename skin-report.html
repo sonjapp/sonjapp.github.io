@@ -1,0 +1,2804 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>搜狗输入法皮肤舆情分析报告 v7</title>
+<style>
+:root {
+  /* 背景层 - 清透渐变 */
+  --bg: linear-gradient(135deg, #f5f0ff 0%, #fff0f5 50%, #f0f8ff 100%);
+  --surface: rgba(255,255,255,0.72);
+  --surface-2: rgba(255,255,255,0.55);
+  --surface-hover: rgba(255,255,255,0.85);
+  /* 边框 */
+  --border: rgba(255,255,255,0.5);
+  --border-light: rgba(255,255,255,0.35);
+  /* 文字 */
+  --text: #2d2b55;
+  --text-secondary: #6b6890;
+  --text-tertiary: #a09ec0;
+  /* 强调色 - 柔和蓝紫 */
+  --accent: #6366f1;
+  --accent-light: rgba(99,102,241,0.12);
+  --accent-gradient: linear-gradient(135deg, #818cf8 0%, #a78bfa 100%);
+  /* 情感色 - 更柔和 */
+  --positive: #34d399;
+  --positive-bg: rgba(52,211,153,0.12);
+  --negative: #f87171;
+  --negative-bg: rgba(248,113,113,0.12);
+  --neutral: #fbbf24;
+  --neutral-bg: rgba(251,191,36,0.12);
+  /* 渠道色 */
+  --xhs: #fe2c55;
+  --weibo: #e6162d;
+  --other: #a09ec0;
+  /* 阴影 - 极其轻盈 */
+  --shadow-sm: 0 1px 2px rgba(99,102,241,0.06);
+  --shadow: 0 2px 8px rgba(99,102,241,0.08), 0 4px 16px rgba(139,92,246,0.04);
+  --shadow-lg: 0 4px 12px rgba(99,102,241,0.1), 0 8px 24px rgba(139,92,246,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); background-attachment:fixed; color:var(--text); font-family:-apple-system,'PingFang SC','Microsoft YaHei','Segoe UI',sans-serif; line-height:1.5; font-size:13px; -webkit-font-smoothing:antialiased; }
+.container { margin:0 auto; padding:28px 32px; max-width:1400px; }
+
+/* Header */
+.header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:28px; padding-bottom:20px; border-bottom:1px solid var(--border-light); }
+.header-left h1 { font-size:24px; font-weight:700; color:var(--text); margin-bottom:6px; letter-spacing:-0.3px; }
+.header-left .subtitle { font-size:13px; color:var(--text-secondary); font-weight:500; }
+.header-right { text-align:right; }
+.header-right .period { font-size:12px; color:var(--text-tertiary); margin-bottom:4px; }
+.header-right .total { font-size:32px; font-weight:800; color:var(--text); line-height:1; letter-spacing:-0.5px; }
+.header-right .total-label { font-size:11px; color:var(--text-tertiary); font-weight:500; }
+
+/* Card */
+.card { background:var(--surface); border-radius:24px; border:1px solid var(--border); overflow:hidden; box-shadow:var(--shadow); transition:box-shadow .2s ease, transform .2s ease; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
+.card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+.card-header { padding:18px 22px; border-bottom:1px solid var(--border-light); display:flex; align-items:center; justify-content:space-between; }
+.card-header h3 { font-size:15px; font-weight:700; color:var(--text); letter-spacing:-0.2px; }
+.card-header .badge { font-size:11px; font-weight:700; padding:4px 12px; border-radius:20px; }
+.card-body { padding:22px; }
+
+/* Grid */
+.grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; }
+.grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; }
+.grid-4 { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; }
+
+/* KPI */
+.kpi-card { background:var(--surface); border-radius:20px; border:1px solid var(--border); padding:20px; text-align:center; box-shadow:var(--shadow-sm); transition:all .2s ease; position:relative; overflow:hidden; backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); }
+.kpi-card:hover { box-shadow:var(--shadow); transform:translateY(-2px); }
+.kpi-card[style*="gradient"]:hover { transform:translateY(-3px); box-shadow:0 8px 32px rgba(129,140,248,0.3); }
+.kpi-value { font-size:26px; font-weight:800; line-height:1.2; margin-bottom:4px; letter-spacing:-0.5px; }
+.kpi-label { font-size:12px; color:var(--text-tertiary); font-weight:500; }
+
+/* Donut */
+.donut-container { display:flex; align-items:center; gap:28px; }
+.donut-chart { position:relative; width:140px; height:140px; flex-shrink:0; }
+.donut-chart svg { transform:rotate(-90deg); }
+.donut-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+.donut-center .pct { font-size:26px; font-weight:800; color:var(--text); line-height:1; letter-spacing:-0.5px; }
+.donut-center .label { font-size:11px; color:var(--text-tertiary); font-weight:500; }
+.donut-legend { flex:1; }
+.legend-item { display:flex; align-items:center; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--border-light); }
+.legend-item:last-child { border-bottom:none; }
+.legend-dot { width:10px; height:10px; border-radius:50%; margin-right:10px; display:inline-block; }
+.legend-name { font-size:13px; font-weight:600; color:var(--text); }
+.legend-count { font-size:13px; font-weight:700; color:var(--text); }
+.legend-pct { font-size:12px; color:var(--text-tertiary); margin-left:4px; font-weight:500; }
+
+/* Source bars */
+.source-list { display:flex; flex-direction:column; gap:12px; }
+.source-item { display:flex; align-items:center; gap:12px; }
+.source-logo { width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800; color:#fff; flex-shrink:0; }
+.source-info { flex:1; }
+.source-name { font-size:13px; font-weight:600; color:var(--text); margin-bottom:3px; }
+.source-bar-bg { height:8px; background:var(--border-light); border-radius:4px; overflow:hidden; }
+.source-bar-fill { height:100%; border-radius:4px; transition:width .6s ease; }
+.source-count { font-size:13px; font-weight:700; color:var(--text); min-width:56px; text-align:right; }
+.source-pct { font-size:12px; color:var(--text-tertiary); min-width:44px; text-align:right; font-weight:500; }
+
+/* Word Cloud */
+.word-cloud-container { position:relative; height:200px; overflow:hidden; }
+.word-cloud-item { position:absolute; font-weight:700; white-space:nowrap; cursor:default; transition:transform .2s ease, filter .2s ease; }
+.word-cloud-item:hover { transform:scale(1.15); z-index:10; filter:brightness(1.1); }
+
+/* Section title */
+.section-title { font-size:18px; font-weight:700; color:var(--text); margin:36px 0 20px; display:flex; align-items:center; gap:10px; letter-spacing:-0.3px; }
+.section-title::before { content:''; width:4px; height:18px; background:var(--accent); border-radius:4px; }
+.section-title.positive::before { background:var(--positive); }
+.section-title.negative::before { background:var(--negative); }
+.section-title.neutral::before { background:var(--neutral); }
+.section-subtitle { font-size:13px; color:var(--text-tertiary); font-weight:500; margin-left:8px; }
+
+/* ===== Channel Sentiment Row ===== */
+.channel-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-bottom:20px; }
+.channel-card { background:var(--surface); border-radius:24px; border:1px solid var(--border); overflow:hidden; box-shadow:var(--shadow); transition:box-shadow .2s ease, transform .2s ease; backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
+.channel-card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+.channel-card-header { padding:18px 22px; display:flex; align-items:center; gap:12px; border-bottom:1px solid var(--border-light); }
+.channel-logo { width:32px; height:32px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; color:#fff; }
+.channel-name { font-size:15px; font-weight:700; color:var(--text); letter-spacing:-0.2px; }
+.channel-total { font-size:13px; color:var(--text-tertiary); margin-left:auto; font-weight:600; }
+.channel-body { padding:20px 22px; }
+
+/* Channel sentiment stacked bar */
+.ch-sentiment-bar { display:flex; height:10px; border-radius:5px; overflow:hidden; margin-bottom:14px; }
+.ch-sentiment-bar > div { transition:width .6s ease; }
+
+.ch-sentiment-stats { display:flex; gap:14px; margin-bottom:16px; }
+.ch-stat { display:flex; align-items:center; gap:5px; }
+.ch-stat-dot { width:8px; height:8px; border-radius:50%; }
+.ch-stat-pct { font-size:12px; font-weight:700; color:var(--text); }
+.ch-stat-label { font-size:11px; color:var(--text-tertiary); font-weight:500; }
+.ch-stat-count { font-size:11px; color:var(--text-tertiary); font-weight:500; }
+
+/* Channel word cloud mini */
+.ch-wordcloud { position:relative; height:160px; overflow:hidden; border-top:1px solid var(--border-light); padding-top:12px; margin-top:6px; }
+.ch-wc-item { position:absolute; white-space:nowrap; cursor:default; transition:transform .15s ease; font-weight:600; }
+.ch-wc-item:hover { transform:scale(1.15); z-index:10; }
+.ch-wc-label { font-size:11px; color:var(--text-tertiary); margin-bottom:8px; font-weight:600; }
+
+/* ===== Tab Drill-down ===== */
+.drill-section { background:var(--surface); border-radius:24px; border:1px solid var(--border); overflow:hidden; margin-bottom:20px; box-shadow:var(--shadow); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); }
+.drill-tabs { display:flex; flex-wrap:wrap; border-bottom:1px solid var(--border-light); padding:0 12px; background:var(--surface-2); }
+.drill-tab { padding:12px 16px; font-size:13px; font-weight:600; color:var(--text-secondary); cursor:pointer; border-bottom:3px solid transparent; transition:all .2s ease; user-select:none; white-space:nowrap; }
+.drill-tab:hover { color:var(--text); background:rgba(99,102,241,0.06); }
+.drill-tab.active { color:var(--accent); font-weight:700; border-bottom-color:var(--accent); }
+.drill-tab.tab-negative.active { color:var(--negative); border-bottom-color:var(--negative); }
+.drill-tab.tab-positive.active { color:var(--positive); border-bottom-color:var(--positive); }
+.drill-tab.tab-neutral.active { color:var(--neutral); border-bottom-color:var(--neutral); }
+.drill-tab .tab-count { font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; margin-left:6px; }
+/* 情感顶级Tab样式 */
+.sentiment-top-tabs { background:var(--surface-2); border-bottom:2px solid var(--border-light); padding:0 16px; }
+.sentiment-top-tabs .drill-tab { font-size:14px; padding:14px 20px; font-weight:700; }
+.sentiment-top-tabs .drill-tab .tab-count { font-size:12px; padding:3px 10px; }
+/* 情感下钻内容区内的子Tab行 */
+#sentimentContent_positive .drill-tabs, #sentimentContent_negative .drill-tabs, #sentimentContent_neutral .drill-tabs { border-top:1px solid var(--border-light); margin-top:0; }
+/* 竞品分析内容区内的子Tab行 */
+#topContent_channel .drill-tabs, #topContent_compete .drill-tabs { border-top:1px solid var(--border-light); margin-top:0; }
+.drill-content { display:none; padding:0; }
+.drill-content.active { display:block; }
+/* 情感内容区内部有padding */
+#sentimentContent_positive > .drill-tabs, #sentimentContent_negative > .drill-tabs, #sentimentContent_neutral > .drill-tabs { padding:0 12px; }
+/* 竞品分析内容区内部有padding */
+#topContent_channel > .drill-tabs, #topContent_compete > .drill-tabs { padding:0 12px; }
+#positiveContent, #negativeContent, #neutralContent { padding:24px; }
+
+/* Subcategory cards inside tab */
+.subcat-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+.subcat-card { background:var(--surface-2); border-radius:16px; border:1px solid var(--border-light); overflow:hidden; transition:transform .15s ease; backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+.subcat-card:hover { transform:translateY(-1px); }
+.subcat-card-head { padding:12px 16px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid var(--border-light); }
+.subcat-card-name { font-size:13px; font-weight:700; color:var(--text); }
+.subcat-card-count { font-size:11px; font-weight:700; padding:3px 10px; border-radius:12px; }
+.subcat-card-body { padding:12px 16px; }
+.example-item { font-size:12px; color:var(--text-secondary); line-height:1.6; padding:8px 10px; background:var(--surface); border-radius:8px; margin-bottom:6px; border-left:3px solid var(--border); transition:border-color .15s ease; }
+.example-item:hover { border-left-color:var(--accent); }
+.example-item:last-child { margin-bottom:0; }
+.example-item .ex-type { font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; margin-right:6px; }
+.ex-type-吐槽 { background:var(--negative-bg); color:var(--negative); }
+.ex-type-问题 { background:#eef1ff; color:#4f6af5; }
+.ex-type-建议 { background:var(--neutral-bg); color:var(--neutral); }
+.ex-type-好评 { background:var(--positive-bg); color:var(--positive); }
+.ex-type-重复 { background:#f5f0ff; color:#7c3aed; }
+
+/* Category header inside tab */
+.cat-group { margin-bottom:24px; }
+.cat-group:last-child { margin-bottom:0; }
+.cat-group-header { display:flex; align-items:center; gap:10px; margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid var(--border-light); }
+.cat-group-rank { font-size:12px; font-weight:800; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; }
+.cat-group-rank.r-negative { background:var(--negative-bg); color:var(--negative); }
+.cat-group-rank.r-positive { background:var(--positive-bg); color:var(--positive); }
+.cat-group-rank.r-neutral { background:var(--neutral-bg); color:var(--neutral); }
+.cat-group-name { font-size:14px; font-weight:700; color:var(--text); letter-spacing:-0.2px; }
+.cat-group-count { font-size:12px; font-weight:700; padding:3px 10px; border-radius:12px; }
+
+/* Compete section */
+.compete-sentiment-bar { display:flex; height:10px; border-radius:5px; overflow:hidden; flex:1; }
+.compete-sentiment-bar > div { transition:width .6s ease; }
+.compete-stats { display:flex; gap:16px; flex-wrap:wrap; }
+.compete-stat { display:flex; align-items:center; gap:6px; }
+.compete-stat-dot { width:8px; height:8px; border-radius:50%; }
+.compete-stat-val { font-size:13px; font-weight:700; color:var(--text); }
+.compete-stat-label { font-size:12px; color:var(--text-tertiary); font-weight:500; }
+.compete-themes { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; margin-bottom:16px; }
+.compete-theme-tag { font-size:12px; padding:4px 12px; border-radius:12px; background:var(--accent-light); color:var(--accent); font-weight:600; }
+.compete-quote { font-size:12px; color:var(--text-secondary); line-height:1.6; padding:10px 12px; background:var(--surface-2); border-radius:10px; margin-bottom:8px; border-left:3px solid var(--border); position:relative; transition:border-color .15s ease; }
+.compete-quote:hover { border-left-color:var(--accent); }
+.compete-quote.q-positive { border-left-color:var(--positive); }
+.compete-quote.q-negative { border-left-color:var(--negative); }
+.compete-quote.q-neutral { border-left-color:var(--neutral); }
+.compete-quote-tag { font-size:10px; font-weight:700; padding:2px 6px; border-radius:6px; margin-right:6px; }
+.compete-quote-tag.t-pos { background:var(--positive-bg); color:var(--positive); }
+.compete-quote-tag.t-neg { background:var(--negative-bg); color:var(--negative); }
+.compete-quote-tag.t-neu { background:var(--neutral-bg); color:var(--neutral); }
+.compete-insight { background:linear-gradient(135deg,rgba(129,140,248,0.1),rgba(167,139,250,0.1)); border-radius:16px; padding:18px 20px; margin-top:20px; border:1px solid rgba(129,140,248,0.2); backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); }
+.compete-insight-title { font-size:13px; font-weight:800; color:#6366f1; margin-bottom:8px; }
+.compete-insight-text { font-size:12px; color:#7c3aed; line-height:1.7; }
+
+/* Responsive */
+
+/* ===== Sidebar Navigation Layout ===== */
+.app-layout { display:flex; min-height:100vh; }
+.sidebar { width:240px; min-width:240px; background:rgba(255,255,255,0.65); border-right:1px solid var(--border); position:fixed; top:0; left:0; bottom:0; z-index:100; display:flex; flex-direction:column; box-shadow:4px 0 24px rgba(99,102,241,0.08); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); }
+.sidebar::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:linear-gradient(90deg, #818cf8, #a78bfa, #f472b6); z-index:1; }
+.sidebar-header { padding:24px 20px 20px; border-bottom:1px solid var(--border-light); }
+.sidebar-header h2 { font-size:15px; font-weight:800; color:var(--text); line-height:1.3; letter-spacing:-0.3px; }
+.sidebar-header .sidebar-sub { font-size:12px; color:var(--text-tertiary); margin-top:6px; font-weight:500; }
+.sidebar-nav { flex:1; padding:16px 12px; }
+.nav-item { display:flex; align-items:center; gap:12px; padding:14px 16px; border-radius:12px; cursor:pointer; transition:all .2s ease; margin-bottom:6px; font-size:13px; font-weight:600; color:var(--text-secondary); user-select:none; }
+.nav-item:hover { background:var(--surface-hover); color:var(--text); }
+.nav-item.active { background:var(--accent-light); color:var(--accent); font-weight:700; }
+.nav-item .nav-icon { font-size:20px; width:26px; text-align:center; flex-shrink:0; }
+.nav-item .nav-label { flex:1; }
+.nav-item .nav-badge { font-size:11px; font-weight:700; padding:3px 8px; border-radius:10px; background:var(--border-light); color:var(--text-tertiary); }
+.nav-item.active .nav-badge { background:rgba(99,102,241,0.15); color:var(--accent); }
+.sidebar-footer { padding:16px 20px; border-top:1px solid var(--border-light); font-size:11px; color:var(--text-tertiary); font-weight:500; }
+
+.main-content { flex:1; margin-left:240px; min-height:100vh; }
+.main-content .container { margin:0 auto; padding:28px 32px; max-width:1400px; }
+
+/* Page sections - show/hide via nav */
+.page-section { display:none; }
+.page-section.active { display:block; }
+
+/* Responsive: collapse sidebar on small screens */
+@media(max-width:768px) {
+  .sidebar { width:64px; min-width:64px; }
+  .sidebar-header { padding:14px 10px; }
+  .sidebar-header h2, .sidebar-header .sidebar-sub, .nav-item .nav-label, .nav-item .nav-badge, .sidebar-footer { display:none; }
+  .nav-item { justify-content:center; padding:12px; }
+  .main-content { margin-left:64px; }
+  .container { padding:16px; }
+}
+
+/* Original responsive rules */
+@media(max-width:768px) {
+  .grid-2, .grid-3, .grid-4, .channel-row { grid-template-columns:1fr; gap:16px; }
+  .donut-container { flex-direction:column; align-items:center; }
+  .subcat-grid { grid-template-columns:1fr; }
+}
+
+/* ===== Additional Visual Enhancements ===== */
+/* Smooth scrolling */
+html { scroll-behavior:smooth; }
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:rgba(160,158,192,0.3); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:rgba(160,158,192,0.5); }
+
+/* Selection color */
+::selection { background:rgba(99,102,241,0.15); color:var(--text); }
+
+/* Focus states */
+*:focus-visible { outline:2px solid var(--accent); outline-offset:2px; border-radius:4px; }
+
+/* Animation for page transitions */
+.page-section { display:none; animation:fadeIn .3s ease; }
+.page-section.active { display:block; }
+@keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+/* Loading shimmer for data */
+@keyframes shimmer {
+  0% { background-position:-200% 0; }
+  100% { background-position:200% 0; }
+}
+
+/* Enhanced badge styles */
+.badge { transition:transform .15s ease; }
+.badge:hover { transform:scale(1.05); }
+
+/* Tab hover lift effect */
+.drill-tab { position:relative; }
+.drill-tab::after {
+  content:'';
+  position:absolute;
+  bottom:0;
+  left:50%;
+  width:0;
+  height:3px;
+  background:var(--accent);
+  transition:all .2s ease;
+  transform:translateX(-50%);
+  border-radius:3px 3px 0 0;
+}
+.drill-tab:hover::after { width:60%; }
+.drill-tab.active::after { width:0; }
+
+/* Channel card enhanced */
+.channel-card { position:relative; }
+.channel-card::before {
+  content:'';
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:3px;
+  background:var(--accent);
+  opacity:0;
+  transition:opacity .2s ease;
+  border-radius:24px 24px 0 0;
+}
+.channel-card:hover::before { opacity:1; }
+</style>
+</head>
+<body>
+<div class="app-layout">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;"><span style="font-size:22px;">📊</span></div>
+      <h2>搜狗输入法<br>皮肤舆情分析</h2>
+      <div class="sidebar-sub">Android端 · v7</div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-item active" onclick="switchMainNav(0)" id="mainNav0">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">舆情总览</span>
+        <span class="nav-badge">14,714</span>
+      </div>
+      <div class="nav-item" onclick="switchMainNav(1)" id="mainNav1">
+        <span class="nav-icon">🔍</span>
+        <span class="nav-label">下钻分析</span>
+        <span class="nav-badge">2,298</span>
+      </div>
+      <div class="nav-item" onclick="switchMainNav(2)" id="mainNav2">
+        <span class="nav-icon">📡</span>
+        <span class="nav-label">渠道对比</span>
+        <span class="nav-badge">3渠道</span>
+      </div>
+      <div class="nav-item" onclick="switchMainNav(3)" id="mainNav3">
+        <span class="nav-icon">⚔️</span>
+        <span class="nav-label">竞品对比</span>
+        <span class="nav-badge">7竞品</span>
+      </div>
+      <div class="nav-item" onclick="switchMainNav(4)" id="mainNav4">
+        <span class="nav-icon">🎨</span>
+        <span class="nav-label">皮肤定制</span>
+        <span class="nav-badge">1,387</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">2025.05 - 2026.05 逐条全量分析</div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+<div class="container">
+
+<!-- ===== PAGE SECTION 0: 舆情总览 ===== -->
+<div class="page-section active" id="pageSection0">
+
+<!-- Row 1: 情感分布 + 渠道分布 + 关键词词云 (三列排开) -->
+<div class="grid-3" style="margin-bottom:20px;">
+
+  <!-- 情感分布 -->
+  <div class="card">
+    <div class="card-header">
+      <h3>情感分布仪表盘</h3>
+      <span class="badge" style="background:var(--positive-bg);color:var(--positive);">正面主导</span>
+    </div>
+    <div class="card-body" style="padding:20px;">
+      <div class="donut-container" style="flex-direction:column;gap:12px;">
+        <div class="donut-chart" style="width:120px;height:120px;">
+          <svg width="120" height="120" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r="58" fill="none" stroke="var(--border-light)" stroke-width="16"/>
+            <circle cx="70" cy="70" r="58" fill="none" stroke="var(--positive)" stroke-width="16" stroke-dasharray="256.6 108.4" stroke-linecap="round"/>
+            <circle cx="70" cy="70" r="58" fill="none" stroke="var(--negative)" stroke-width="16" stroke-dasharray="55.9 309.1" stroke-dashoffset="-256.6" stroke-linecap="round"/>
+            <circle cx="70" cy="70" r="58" fill="none" stroke="var(--neutral)" stroke-width="16" stroke-dasharray="45.5 319.5" stroke-dashoffset="-312.5" stroke-linecap="round"/>
+          </svg>
+          <div class="donut-center">
+            <div class="pct" style="font-size:20px;">71.7%</div>
+            <div class="label">正面</div>
+          </div>
+        </div>
+        <div class="donut-legend" style="width:100%;">
+          <div class="legend-item"><span><span class="legend-dot" style="background:var(--positive)"></span><span class="legend-name">正面</span></span><span><span class="legend-count">10,546</span><span class="legend-pct">71.7%</span></span></div>
+          <div class="legend-item"><span><span class="legend-dot" style="background:var(--negative)"></span><span class="legend-name">负面</span></span><span><span class="legend-count">2,298</span><span class="legend-pct">15.6%</span></span></div>
+          <div class="legend-item"><span><span class="legend-dot" style="background:var(--neutral)"></span><span class="legend-name">中性</span></span><span><span class="legend-count">1,870</span><span class="legend-pct">12.7%</span></span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 渠道分布 -->
+  <div class="card">
+    <div class="card-header">
+      <h3>渠道分布</h3>
+      <span class="badge" style="background:#fce7f3;color:#db2777;">6个渠道</span>
+    </div>
+    <div class="card-body" style="padding:20px;">
+      <div class="source-list">
+        <div class="source-item"><div class="source-logo" style="background:#fe2c55;">书</div><div class="source-info"><div class="source-name">小红书</div><div class="source-bar-bg"><div class="source-bar-fill" style="width:100%;background:#fe2c55;"></div></div></div><div class="source-count">8,026</div><div class="source-pct">54.5%</div></div>
+        <div class="source-item"><div class="source-logo" style="background:#e6162d;">微</div><div class="source-info"><div class="source-name">新浪微博</div><div class="source-bar-bg"><div class="source-bar-fill" style="width:44.4%;background:#e6162d;"></div></div></div><div class="source-count">3,561</div><div class="source-pct">24.2%</div></div>
+        <div class="source-item"><div class="source-logo" style="background:#8b90a0;">其</div><div class="source-info"><div class="source-name">其他/未标注</div><div class="source-bar-bg"><div class="source-bar-fill" style="width:37.4%;background:#8b90a0;"></div></div></div><div class="source-count">3,002</div><div class="source-pct">20.4%</div></div>
+        <div class="source-item"><div class="source-logo" style="background:#ff5000;">快</div><div class="source-info"><div class="source-name">快手</div><div class="source-bar-bg"><div class="source-bar-fill" style="width:0.4%;background:#ff5000;"></div></div></div><div class="source-count">36</div><div class="source-pct">0.2%</div></div>
+        <div class="source-item"><div class="source-logo" style="background:#2932e1;">贴</div><div class="source-info"><div class="source-name">百度贴吧</div><div class="source-bar-bg"><div class="source-bar-fill" style="width:0.4%;background:#2932e1;"></div></div></div><div class="source-count">30</div><div class="source-pct">0.2%</div></div>
+        <div class="source-item"><div class="source-logo" style="background:#000;">抖</div><div class="source-info"><div class="source-name">抖音</div><div class="source-bar-bg"><div class="source-bar-fill" style="width:0.1%;background:#000;"></div></div></div><div class="source-count">11</div><div class="source-pct">0.1%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 关键词词云 -->
+  <div class="card">
+    <div class="card-header">
+      <h3>关键词词云</h3>
+      <span class="badge" style="background:#e8f5e9;color:var(--positive);">高频词</span>
+    </div>
+    <div class="card-body" style="padding:20px;">
+      <div class="word-cloud-container" id="wordCloud" style="height:200px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ===== Row 3: Channel Sentiment × Word Cloud (三横行) ===== -->
+<div class="section-title">📊 渠道情感分布 & 关键词差异 <span class="section-subtitle">三大渠道对比</span></div>
+<div class="channel-row">
+
+  <!-- 小红书 -->
+  <div class="channel-card">
+    <div class="channel-card-header">
+      <div class="channel-logo" style="background:#fe2c55;">书</div>
+      <span class="channel-name">小红书</span>
+      <span class="channel-total">8,026条</span>
+    </div>
+    <div class="channel-body">
+      <div class="ch-sentiment-bar">
+        <div style="width:91.4%;background:var(--positive);" title="正面 91.4%"></div>
+        <div style="width:3.8%;background:var(--negative);" title="负面 3.8%"></div>
+        <div style="width:4.8%;background:var(--neutral);" title="中性 4.8%"></div>
+      </div>
+      <div class="ch-sentiment-stats">
+        <div class="ch-stat"><div class="ch-stat-dot" style="background:var(--positive)"></div><span class="ch-stat-pct">91.4%</span><span class="ch-stat-label">正面</span><span class="ch-stat-count">7,335</span></div>
+        <div class="ch-stat"><div class="ch-stat-dot" style="background:var(--negative)"></div><span class="ch-stat-pct">3.8%</span><span class="ch-stat-label">负面</span><span class="ch-stat-count">308</span></div>
+        <div class="ch-stat"><div class="ch-stat-dot" style="background:var(--neutral)"></div><span class="ch-stat-pct">4.8%</span><span class="ch-stat-label">中性</span><span class="ch-stat-count">383</span></div>
+      </div>
+      <div class="ch-wc-label">正面热词</div>
+      <div class="ch-wordcloud" id="wc_xhs_pos"></div>
+      <div class="ch-wc-label" style="margin-top:6px;">负面/中性热词</div>
+      <div class="ch-wordcloud" id="wc_xhs_neg" style="height:100px;"></div>
+    </div>
+  </div>
+
+  <!-- 新浪微博 -->
+  <div class="channel-card">
+    <div class="channel-card-header">
+      <div class="channel-logo" style="background:#e6162d;">微</div>
+      <span class="channel-name">新浪微博</span>
+      <span class="channel-total">3,561条</span>
+    </div>
+    <div class="channel-body">
+      <div class="ch-sentiment-bar">
+        <div style="width:87.5%;background:var(--positive);" title="正面 87.5%"></div>
+        <div style="width:4.0%;background:var(--negative);" title="负面 4.0%"></div>
+        <div style="width:8.5%;background:var(--neutral);" title="中性 8.5%"></div>
+      </div>
+      <div class="ch-sentiment-stats">
+        <div class="ch-stat"><div class="ch-stat-dot" style="background:var(--positive)"></div><span class="ch-stat-pct">87.5%</span><span class="ch-stat-label">正面</span><span class="ch-stat-count">3,115</span></div>
+        <div class="ch-stat"><div class="ch-stat-dot" style="background:var(--negative)"></div><span class="ch-stat-pct">4.0%</span><span class="ch-stat-label">负面</span><span class="ch-stat-count">142</span></div>
+        <div class="ch-stat"><div class="ch-stat-dot" style="background:var(--neutral)"></div><span class="ch-stat-pct">8.5%</span><span class="ch-stat-label">中性</span><span class="ch-stat-count">304</span></div>
+      </div>
+      <div class="ch-wc-label">正面热词</div>
+      <div class="ch-wordcloud" id="wc_wb_pos"></div>
+      <div class="ch-wc-label" style="margin-top:6px;">负面/中性热词</div>
+      <div class="ch-wordcloud" id="wc_wb_neg" style="height:100px;"></div>
+    </div>
+  </div>
+
+  <!-- 其他/未标注 -->
+  <div class="channel-card">
+    <div class="channel-card-header">
+      <div class="channel-logo" style="background:#8b90a0;">其</div>
+      <span class="channel-name">其他/未标注</span>
+      <span class="channel-total">3,002条</span>
+    </div>
+    <div class="channel-body">
+      <div class="ch-sentiment-bar">
+        <div style="width:0.2%;background:var(--positive);" title="正面 0.2%"></div>
+        <div style="width:60.9%;background:var(--negative);" title="负面 60.9%"></div>
+        <div style="width:38.9%;background:var(--neutral);" title="中性 38.9%"></div>
+      </div>
+      <div class="ch-sentiment-stats">
+        <div class="ch-stat"><div class="ch-stat-dot" style="background:var(--positive)"></div><span class="ch-stat-pct">0.2%</span><span class="ch-stat-label">正面</span><span class="ch-stat-count">7</span></div>
+        <div class="ch-stat"><div class="ch-stat-dot" style="background:var(--negative)"></div><span class="ch-stat-pct">60.9%</span><span class="ch-stat-label">负面</span><span class="ch-stat-count">1,828</span></div>
+        <div class="ch-stat"><div class="ch-stat-dot" style="background:var(--neutral)"></div><span class="ch-stat-pct">38.9%</span><span class="ch-stat-label">中性</span><span class="ch-stat-count">1,167</span></div>
+      </div>
+      <div class="ch-wc-label">负面热词</div>
+      <div class="ch-wordcloud" id="wc_other_neg"></div>
+      <div class="ch-wc-label" style="margin-top:6px;">中性热词</div>
+      <div class="ch-wordcloud" id="wc_other_neu" style="height:100px;"></div>
+    </div>
+  </div>
+
+</div>
+
+</div>
+
+
+<!-- ===== PAGE SECTION 1: 下钻分析 ===== -->
+<div class="page-section" id="pageSection1">
+<div class="section-title">🔍 下钻分析 <span class="section-subtitle">14,714条 · 切换正面/负面/中性查看分类与案例</span></div>
+<div class="drill-section">
+  <!-- 顶级Tab: 正面 | 负面 | 中性 -->
+  <div class="drill-tabs sentiment-top-tabs" id="sentimentTopTabs">
+    <div class="drill-tab tab-positive active" onclick="switchSentimentTab('positive')" id="sentimentTab_positive">
+      🟢 正面好评 <span class="tab-count" style="background:var(--positive-bg);color:var(--positive)">10,546条</span>
+    </div>
+    <div class="drill-tab tab-negative" onclick="switchSentimentTab('negative')" id="sentimentTab_negative">
+      🔴 负面问题 <span class="tab-count" style="background:var(--negative-bg);color:var(--negative)">2,298条</span>
+    </div>
+    <div class="drill-tab tab-neutral" onclick="switchSentimentTab('neutral')" id="sentimentTab_neutral">
+      🟠 中性建议 <span class="tab-count" style="background:var(--neutral-bg);color:var(--neutral)">1,870条</span>
+    </div>
+  </div>
+  <!-- 正面下钻内容 -->
+  <div id="sentimentContent_positive" class="drill-content active">
+    <div class="drill-tabs" id="positiveTabs"></div>
+    <div id="positiveContent"></div>
+  </div>
+  <!-- 负面下钻内容 -->
+  <div id="sentimentContent_negative" class="drill-content">
+    <div class="drill-tabs" id="negativeTabs"></div>
+    <div id="negativeContent"></div>
+  </div>
+  <!-- 中性下钻内容 -->
+  <div id="sentimentContent_neutral" class="drill-content">
+    <div class="drill-tabs" id="neutralTabs"></div>
+    <div id="neutralContent"></div>
+  </div>
+</div>
+
+</div>
+
+
+
+<!-- ===== PAGE SECTION 2: 渠道对比 ===== -->
+<div class="page-section" id="pageSection2">
+<div class="section-title">📡 渠道对比 <span class="section-subtitle">三大渠道的好评/中评/差评分析</span></div>
+<div class="drill-section">
+  <!-- 渠道子Tab -->
+  <div class="drill-tabs" id="channelCompetitorTabs">
+    <div class="drill-tab active" onclick="switchChannelCompetitorTab(0)">
+      <span style="display:inline-flex;width:18px;height:18px;border-radius:5px;background:#fe2c55;color:#fff;font-size:9px;font-weight:700;align-items:center;justify-content:center;margin-right:4px;">书</span>
+      小红书 <span class="tab-count" style="background:#fce7f3;color:#db2777;">378</span>
+    </div>
+    <div class="drill-tab" onclick="switchChannelCompetitorTab(1)">
+      <span style="display:inline-flex;width:18px;height:18px;border-radius:5px;background:#e6162d;color:#fff;font-size:9px;font-weight:700;align-items:center;justify-content:center;margin-right:4px;">微</span>
+      新浪微博 <span class="tab-count" style="background:#fef2f2;color:#dc2626;">149</span>
+    </div>
+    <div class="drill-tab" onclick="switchChannelCompetitorTab(2)">
+      <span style="display:inline-flex;width:18px;height:18px;border-radius:5px;background:#8b90a0;color:#fff;font-size:9px;font-weight:700;align-items:center;justify-content:center;margin-right:4px;">其</span>
+      其他/未标注 <span class="tab-count" style="background:#f5f5f5;color:#616161;">38</span>
+    </div>
+  </div>
+  <div id="channelCompetitorContent"></div>
+</div>
+</div>
+
+<!-- ===== PAGE SECTION 3: 竞品对比 ===== -->
+<div class="page-section" id="pageSection3">
+<div class="section-title">⚔️ 竞品对比 <span class="section-subtitle">7大竞品情感与主题分析</span></div>
+<div class="drill-section">
+  <div style="padding:24px;border-bottom:1px solid var(--border-light);">
+    <div class="grid-4" id="competeKPI"></div>
+  </div>
+  <div class="drill-tabs" id="competeTabs"></div>
+  <div id="competeContent"></div>
+</div>
+</div>
+
+<!-- ===== PAGE SECTION 4: 皮肤定制 ===== -->
+<div class="page-section" id="pageSection4">
+<div class="section-title">🎨 皮肤定制 <span class="section-subtitle">1,387条定制相关舆情 · 10大分类</span></div>
+<div class="drill-section">
+  <!-- 情感子Tab -->
+  <div class="drill-tabs" id="customSkinTabs">
+    <div class="drill-tab active" onclick="switchCustomSkinTab('negative')">
+      🔴 负面问题 <span class="tab-count" style="background:var(--negative-bg);color:var(--negative)">692条</span>
+    </div>
+    <div class="drill-tab" onclick="switchCustomSkinTab('positive')">
+      🟢 正面好评 <span class="tab-count" style="background:var(--positive-bg);color:var(--positive)">571条</span>
+    </div>
+    <div class="drill-tab" onclick="switchCustomSkinTab('neutral')">
+      🟡 中性建议 <span class="tab-count" style="background:var(--neutral-bg);color:var(--neutral)">124条</span>
+    </div>
+  </div>
+  <div id="customSkinContent"></div>
+</div>
+</div>
+
+  </main>
+</div>
+
+<script>
+// switchTopLevelTab removed — each dimension is now a separate page section
+
+// 情感下钻顶级Tab切换：正面/负面/中性
+function switchSentimentTab(type) {
+  ['positive','negative','neutral'].forEach(t => {
+    document.getElementById('sentimentTab_' + t).classList.toggle('active', t === type);
+    document.getElementById('sentimentContent_' + t).classList.toggle('active', t === type);
+  });
+}
+
+// 渠道对比页面：渠道Tab切换
+function switchChannelCompetitorTab(index) {
+  const tabs = document.getElementById('channelCompetitorTabs');
+  const contents = document.getElementById('channelCompetitorContent');
+  if (!tabs || !contents) return;
+
+  tabs.querySelectorAll('.drill-tab').forEach((t, i) => {
+    t.classList.toggle('active', i === index);
+  });
+  contents.querySelectorAll('.drill-content').forEach((c, i) => {
+    c.classList.toggle('active', i === index);
+  });
+}
+
+// 皮肤定制页面：情感Tab切换
+function switchCustomSkinTab(sentiment) {
+  const tabs = document.getElementById('customSkinTabs');
+  const contents = document.getElementById('customSkinContent');
+  if (!tabs || !contents) return;
+
+  const types = ['negative', 'positive', 'neutral'];
+  tabs.querySelectorAll('.drill-tab').forEach((t, i) => {
+    t.classList.toggle('active', types[i] === sentiment);
+  });
+  contents.querySelectorAll('.drill-content').forEach((c) => {
+    c.classList.toggle('active', c.id === 'customSkinPanel_' + sentiment);
+  });
+}
+
+// 左侧主导航切换
+function switchMainNav(index) {
+  // Update nav items
+  for (let i = 0; i < 5; i++) {
+    const navEl = document.getElementById('mainNav' + i);
+    const sectionEl = document.getElementById('pageSection' + i);
+    if (navEl) navEl.classList.toggle('active', i === index);
+    if (sectionEl) sectionEl.classList.toggle('active', i === index);
+  }
+  // Ensure first tab content is active when switching to a page
+  ensureFirstTabActive(index);
+  // Scroll to top when switching
+  window.scrollTo(0, 0);
+}
+
+// Ensure the first tab's content is displayed when navigating to a page
+function ensureFirstTabActive(pageIndex) {
+  const section = document.getElementById('pageSection' + pageIndex);
+  if (!section) return;
+
+  // For page 1 (下钻分析): ensure first sentiment tab (positive) is active
+  if (pageIndex === 1) {
+    switchSentimentTab('positive');
+    const posSubContent = document.getElementById('positiveContent_0');
+    if (posSubContent) {
+      document.querySelectorAll('#positiveContent .drill-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('#positiveTabs .drill-tab').forEach(t => t.classList.remove('active'));
+      posSubContent.classList.add('active');
+      const firstTab = document.querySelector('#positiveTabs .drill-tab');
+      if (firstTab) firstTab.classList.add('active');
+    }
+  }
+
+  // For page 2 (渠道对比): ensure first channel tab active
+  if (pageIndex === 2) {
+    switchChannelCompetitorTab(0);
+  }
+
+  // For page 3 (竞品对比): ensure first competitor tab active
+  if (pageIndex === 3) {
+    const tabsEl = document.getElementById('competeTabs');
+    const contentEl = document.getElementById('competeContent');
+    if (tabsEl && contentEl) {
+      tabsEl.querySelectorAll('.drill-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+      contentEl.querySelectorAll('.drill-content').forEach((c, i) => c.classList.toggle('active', i === 0));
+    }
+  }
+
+  // For page 4 (皮肤定制): ensure negative tab active (first tab)
+  if (pageIndex === 4) {
+    switchCustomSkinTab('negative');
+  }
+}
+
+</script>
+
+
+</div>
+
+<script>
+// ========== WORD CLOUD DATA (总体) ==========
+const wordCloudData = [
+  {text:"皮肤",weight:27665,size:32,color:"#818cf8"},
+  {text:"退款",weight:180,size:26,color:"#fca5a5"},
+  {text:"键盘",weight:21874,size:24,color:"#a78bfa"},
+  {text:"丢失",weight:334,size:22,color:"#fb7185"},
+  {text:"下架",weight:334,size:20,color:"#c084fc"},
+  {text:"自定义",weight:58,size:18,color:"#67e8f9"},
+  {text:"上传失败",weight:58,size:17,color:"#fca5a5"},
+  {text:"误买",weight:180,size:16,color:"#fca5a5"},
+  {text:"不好看",weight:117,size:16,color:"#fde047"},
+  {text:"恢复默认",weight:89,size:15,color:"#a09ec0"},
+  {text:"底部白条",weight:68,size:15,color:"#f59e0b"},
+  {text:"变形",weight:49,size:14,color:"#fca5a5"},
+  {text:"动效",weight:26,size:14,color:"#a78bfa"},
+  {text:"审核",weight:31,size:13,color:"#fde047"},
+  {text:"跨端",weight:46,size:13,color:"#67e8f9"},
+  {text:"试用",weight:51,size:13,color:"#818cf8"},
+  {text:"字体颜色",weight:24,size:12,color:"#c084fc"},
+  {text:"按键音",weight:117,size:12,color:"#a78bfa"},
+  {text:"货不对板",weight:12,size:12,color:"#fca5a5"},
+  {text:"广告",weight:20,size:12,color:"#fde047"},
+  {text:"未成年",weight:39,size:11,color:"#fb7185"},
+  {text:"汪豆",weight:8,size:11,color:"#67e8f9"},
+  {text:"支付宝",weight:10,size:11,color:"#818cf8"},
+  {text:"第三方导入",weight:45,size:11,color:"#a78bfa"},
+  {text:"大九键",weight:22,size:11,color:"#a09ec0"},
+  {text:"蓝皮肤",weight:14,size:10,color:"#67e8f9"},
+  {text:"音效",weight:21,size:10,color:"#f59e0b"},
+  {text:"导航栏",weight:68,size:10,color:"#a09ec0"},
+  {text:"隐私",weight:26,size:10,color:"#fb7185"},
+  {text:"同步",weight:46,size:10,color:"#818cf8"},
+  {text:"夜间模式",weight:19,size:10,color:"#a78bfa"},
+  {text:"免费",weight:158,size:10,color:"#34d399"},
+  {text:"太贵",weight:158,size:10,color:"#fca5a5"},
+  {text:"搜不到",weight:133,size:10,color:"#fde047"},
+  {text:"重新购买",weight:58,size:9,color:"#fca5a5"},
+  {text:"兼容",weight:32,size:9,color:"#a09ec0"},
+  {text:"拉伸",weight:49,size:9,color:"#f59e0b"},
+  {text:"删除",weight:38,size:9,color:"#fca5a5"},
+  {text:"AI",weight:208,size:9,color:"#c084fc"},
+  {text:"鸿蒙",weight:11,size:9,color:"#818cf8"},
+  {text:"定制版",weight:32,size:9,color:"#a78bfa"},
+];
+
+// ========== CHANNEL WORD CLOUD DATA (清洗后) ==========
+const chWordData = {
+  xhs_pos: [
+    {text:"壁纸",w:5099,size:22,color:"#fb7185"},
+    {text:"打字",w:4645,size:21,color:"#fb7185"},
+    {text:"颜值",w:1843,size:18,color:"#fb7185"},
+    {text:"推荐键盘",w:1424,size:17,color:"#fb7185"},
+    {text:"超可爱",w:1389,size:17,color:"#fb7185"},
+    {text:"高颜值",w:1381,size:16,color:"#c084fc"},
+    {text:"治愈",w:1374,size:16,color:"#34d399"},
+    {text:"好看",w:1200,size:14,color:"#fde047"},
+    {text:"免费",w:900,size:13,color:"#34d399"},
+    {text:"推荐",w:850,size:12,color:"#818cf8"},
+    {text:"可爱",w:800,size:12,color:"#fb7185"},
+    {text:"安利",w:700,size:11,color:"#fb7185"},
+  ],
+  xhs_neg: [
+    {text:"客服",w:57,size:14,color:"#fca5a5"},
+    {text:"音效",w:42,size:13,color:"#fde047"},
+    {text:"人工",w:40,size:13,color:"#fca5a5"},
+    {text:"购买",w:36,size:12,color:"#fca5a5"},
+    {text:"技术支持",w:36,size:12,color:"#fde047"},
+    {text:"哭惹",w:42,size:12,color:"#a09ec0"},
+    {text:"有没有",w:59,size:11,color:"#a09ec0"},
+    {text:"百度",w:51,size:11,color:"#818cf8"},
+    {text:"不到",w:47,size:10,color:"#a09ec0"},
+  ],
+  wb_pos: [
+    {text:"合作",w:953,size:22,color:"#f87171"},
+    {text:"上线",w:951,size:21,color:"#f87171"},
+    {text:"主题",w:907,size:20,color:"#c084fc"},
+    {text:"定制",w:848,size:19,color:"#a78bfa"},
+    {text:"大家",w:756,size:17,color:"#f87171"},
+    {text:"应援",w:700,size:16,color:"#fb7185"},
+    {text:"官方",w:600,size:14,color:"#818cf8"},
+    {text:"后援会",w:500,size:13,color:"#f87171"},
+    {text:"宋亚轩",w:500,size:13,color:"#fde047"},
+    {text:"松糕",w:500,size:12,color:"#fde047"},
+    {text:"皮肤上架",w:400,size:12,color:"#34d399"},
+    {text:"限定",w:350,size:11,color:"#c084fc"},
+  ],
+  wb_neg: [
+    {text:"超话",w:44,size:14,color:"#a09ec0"},
+    {text:"漂亮",w:31,size:13,color:"#34d399"},
+    {text:"不到",w:31,size:12,color:"#fde047"},
+    {text:"给你",w:31,size:11,color:"#a09ec0"},
+    {text:"原创",w:8,size:11,color:"#fca5a5"},
+    {text:"买的",w:9,size:10,color:"#fca5a5"},
+    {text:"不行",w:9,size:10,color:"#fca5a5"},
+  ],
+  other_neg: [
+    {text:"购买",w:306,size:20,color:"#fca5a5"},
+    {text:"买的",w:299,size:19,color:"#fca5a5"},
+    {text:"显示",w:188,size:16,color:"#fde047"},
+    {text:"不了",w:176,size:16,color:"#fca5a5"},
+    {text:"不能",w:160,size:15,color:"#fca5a5"},
+    {text:"找不到",w:106,size:14,color:"#fb7185"},
+    {text:"无法",w:147,size:14,color:"#fca5a5"},
+    {text:"自定义",w:122,size:13,color:"#a78bfa"},
+    {text:"制作",w:119,size:13,color:"#fde047"},
+    {text:"没有了",w:118,size:12,color:"#fca5a5"},
+    {text:"账号",w:116,size:12,color:"#818cf8"},
+    {text:"没了",w:103,size:11,color:"#fca5a5"},
+    {text:"不到",w:154,size:11,color:"#a09ec0"},
+  ],
+  other_neu: [
+    {text:"退款",w:190,size:18,color:"#fde047"},
+    {text:"不能",w:183,size:16,color:"#fde047"},
+    {text:"购买",w:156,size:15,color:"#a09ec0"},
+    {text:"买的",w:146,size:14,color:"#a09ec0"},
+    {text:"找不到",w:94,size:13,color:"#fde047"},
+    {text:"功能",w:86,size:12,color:"#818cf8"},
+    {text:"字体",w:76,size:12,color:"#a78bfa"},
+    {text:"制作",w:60,size:11,color:"#a09ec0"},
+    {text:"删除",w:59,size:11,color:"#fca5a5"},
+    {text:"电脑",w:59,size:11,color:"#818cf8"},
+    {text:"不到",w:157,size:10,color:"#a09ec0"},
+  ],
+};
+
+// ========== SPIRAL WORD CLOUD ==========
+function renderSpiralCloud(containerId, data) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const cw = container.offsetWidth || 340;
+  const ch = container.offsetHeight || 160;
+  const cx = cw / 2, cy = ch / 2;
+  const placed = [];
+
+  // Pre-create all elements first so browser can calculate layout
+  const elements = [];
+  data.forEach((word, i) => {
+    const el = document.createElement('span');
+    el.className = containerId.startsWith('wc_') ? 'ch-wc-item' : 'word-cloud-item';
+    el.textContent = word.text;
+    el.style.fontSize = word.size + 'px';
+    el.style.color = word.color;
+    el.style.opacity = Math.min(1, 0.8 + ((word.w || word.weight || 0) / 5000) * 0.2);
+    el.style.fontWeight = '700';
+    el.style.visibility = 'hidden'; // hide during layout calculation
+    container.appendChild(el);
+    elements.push({ el, word, i });
+  });
+
+  // Force layout reflow so offsetWidth/offsetHeight are correct
+  container.offsetHeight;
+
+  // Now position each element
+  elements.forEach(({ el, word, i }) => {
+    const w = el.offsetWidth, h = el.offsetHeight;
+    let x = cx, y = cy, angle = i * 2.4, radius = 0;
+    const step = 2.5, spiral = 0.35;
+    let placed_ok = false;
+
+    for (let attempt = 0; attempt < 600; attempt++) {
+      let ok = true;
+      for (const p of placed) {
+        if (Math.abs(x - p.x) < (w + p.w) / 2 + 4 && Math.abs(y - p.y) < (h + p.h) / 2 + 3) {
+          ok = false; break;
+        }
+      }
+      if (ok && x - w/2 > 2 && x + w/2 < cw - 2 && y - h/2 > 2 && y + h/2 < ch - 2) {
+        placed_ok = true; break;
+      }
+      angle += spiral;
+      radius += step;
+      x = cx + Math.cos(angle) * radius;
+      y = cy + Math.sin(angle) * radius;
+    }
+    if (!placed_ok) {
+      x = cx + (Math.random() - 0.5) * cw * 0.6;
+      y = cy + (Math.random() - 0.5) * ch * 0.6;
+    }
+    el.style.left = (x - w/2) + 'px';
+    el.style.top = (y - h/2) + 'px';
+    el.style.visibility = 'visible'; // show after positioning
+    placed.push({x, y, w, h});
+  });
+}
+
+// ========== DRILLDOWN DATA ==========
+const drillData = [
+  {rank:1, name:"其他皮肤相关", count:925, subs:[
+    {name:"皮肤（未分类）", count:421, type:"问题", examples:["打开游戏模式，为什么没有显示输入法皮肤","键盘皮肤搜索异常，输入关键信息搜索不到","不想用ai皮肤"]},
+    {name:"皮肤其他建议", count:193, type:"建议", examples:["怎么取消已购皮肤","可以每一个星期更新一次皮肤啊","搜狗能不能出个皮肤以旧换新呢"]},
+    {name:"自动切换恢复默认", count:89, type:"问题", examples:["键盘皮肤时不时就会自己变回原皮","换上的皮肤没过几个小时自动变成默认的","用了之后皮肤突然就不见了变成了默认皮肤"]},
+    {name:"希望支持导入第三方皮肤", count:45, type:"建议", examples:["请问手机怎么导入皮肤","怎么从第三方导入皮肤","uos导入皮肤需要什么格式的文件"]},
+  ]},
+  {rank:2, name:"已下架皮肤资产丢失", count:648, subs:[
+    {name:"希望找回已下架皮肤", count:334, type:"建议", examples:["更新了输入法双人机场皮肤再也搜不到了","之前的皮肤都消失不见了","用了好几年的皮肤突然没了搜不到了"]},
+    {name:"换手机/换号导致丢失", count:230, type:"问题", examples:["我换了个手机皮肤全部都没有了","绑定了oppo账号后所有购买的皮肤全部被清空","QQ账号和手机号合并原来的购买记录都没了"]},
+    {name:"自定义皮肤丢失", count:77, type:"问题", examples:["重新下载搜狗之前制作的皮肤找不到了","我登上去我制作的皮肤都没了"]},
+    {name:"字体丢失", count:7, type:"问题", examples:["购买过的字体也清空了","之前使用过的皮肤都不见了购买过的字体也清空了"]},
+  ]},
+  {rank:3, name:"皮肤供给不足且发现困难", count:537, subs:[
+    {name:"希望增加更多皮肤", count:370, type:"建议", examples:["皮肤没有多样性","能不能像百度一样出点好看的皮肤","搜狗输入法皮肤怎么更新的那么慢"]},
+    {name:"已购皮肤找不到", count:133, type:"问题", examples:["购买的皮肤全不见了已购和喜欢里都没有","购买的皮肤不见了节前反馈的问题没有处理"]},
+    {name:"无法赠送/领取", count:26, type:"问题", examples:["买了一个皮肤想送给别人但送礼键不见了","买的键盘皮肤所赠送的头像壁纸在资产里没有"]},
+    {name:"不会用皮肤制造机", count:8, type:"吐槽", examples:["只想放自己喜欢的图片不想ai怎么搞","现在都不能自己制作皮肤了我不需要这个"]},
+  ]},
+  {rank:4, name:"皮肤制造机问题", count:535, subs:[
+    {name:"综合问题", count:208, type:"问题", examples:["我想参与设计键盘皮肤来产生收益","套壳后的搜狗皮肤没有状态栏是什么原因","我做皮肤还要经过你这个AI？"]},
+    {name:"其他建议", count:73, type:"建议", examples:["制作皮肤的时候贴纸能不能自定义","一键AI制作皮肤不好用还是以前自己可以制作的好","制作的皮肤上传成功如何再修皮肤名字"]},
+    {name:"上传失败", count:58, type:"问题", examples:["上传不了自己做的皮肤","自定义皮肤创建失败","为什么新安装的搜狗输入法没法自定义皮肤"]},
+    {name:"缩略图变形/显示不全", count:49, type:"问题", examples:["皮肤做出来扁扁的好像被压缩了","自定义皮肤的时候老压扁图片","皮肤发送键被拉伸了和主题图片效果不符"]},
+  ]},
+  {rank:5, name:"皮肤功能异常", count:444, subs:[
+    {name:"无法使用皮肤", count:181, type:"问题", examples:["皮肤下载了的根本启用不了每次刚打开又换回默认了","为什么我的皮肤不管用","使用任意皮肤后首选字为灰色"]},
+    {name:"显示异常", count:67, type:"问题", examples:["皮肤下方有一条展示图没有的bug绿线","皮肤显示不完全","平板用上皮肤之后皮肤被拉大怎么办"]},
+    {name:"已购皮肤需重新购买", count:58, type:"问题", examples:["本人本账号购买的付费皮肤更换其他皮肤后再次使用提示需要重新购买","买了皮肤付款了为什么已购里不显示"]},
+    {name:"定制版不兼容", count:32, type:"吐槽", examples:["定制版搜狗输入法和搜狗输入法皮肤不同步","定制版无法接受普通版的皮肤"]},
+  ]},
+  {rank:6, name:"付费与商业模式", count:422, subs:[
+    {name:"退款/误买", count:180, type:"建议", examples:["不小心误触碰直接付费购买请求全额退款","皮肤退款","我买的皮肤数据都没了有付款记录但无法启动退款"]},
+    {name:"吐槽付费/限免", count:158, type:"吐槽", examples:["没有免费的键盘皮肤","那些皮肤太贵了","皮肤为什么要钱"]},
+    {name:"未成年退款", count:39, type:"建议", examples:["未成年人未经家长同意多次购买键盘皮肤怎么退款","小孩点了输入法皮肤扣费了很多个3元"]},
+    {name:"支付失败", count:21, type:"问题", examples:["我付完钱了不给我皮肤啥意思","付完钱卡顿显示失败又付了一次结果扣了两次费用"]},
+  ]},
+  {rank:7, name:"哇哦主题问题", count:228, subs:[
+    {name:"综合问题", count:59, type:"问题", examples:["我买的皮肤如果想赠送给别人赠送后我还能使用吗","买的套装明明包含壁纸头像但只到了输入法皮肤","购买赠送好友对方无法重复领取"]},
+    {name:"试用/效果不符", count:51, type:"建议", examples:["手机输入法收费皮肤能否有试用功能","买的键盘皮肤和介绍的不符","20种状态虚假宣传使用过程中根本就没有"]},
+    {name:"跨端使用", count:46, type:"建议", examples:["电脑端买了皮肤为什么现在登录平板用不了了","电脑版无法导入账号数据导致购买的皮肤无法使用","电脑版购买的皮肤手机用不了吗"]},
+    {name:"无动态特效", count:26, type:"问题", examples:["皮肤开场动画不显示","买的皮肤启动动画只有第一次有之后再用就没了","浮层动画刚开始启用正常过一段时间就不显示了"]},
+  ]},
+  {rank:8, name:"质量与审美双重滑坡", count:137, subs:[
+    {name:"吐槽皮肤丑", count:117, type:"吐槽", examples:["最近出的皮肤太丑了丑绝人寰","为什么最近的皮肤越来越丑了毫无购买欲望","搜狗输入法的皮肤永远只有在买之前最好看买了以后花里花俏的看不清键盘了"]},
+    {name:"字母位置错误", count:11, type:"问题", examples:["皮肤上的按键字母显示错误上滑输入的符号和皮肤上的对不上","雪王皮肤的字母键盘u和i的位置反了"]},
+    {name:"字体看不清", count:6, type:"问题", examples:["为什么这个皮肤打字时候选字的字体颜色特别浅看不清","横屏打字拼音的颜色和背景色都是白的根本看不清"]},
+  ]},
+  {rank:9, name:"按键音相关问题", count:117, subs:[
+    {name:"综合", count:24, type:"问题", examples:["键盘皮肤自带的音效怎么打开设置里只有系统备选的","启用之后手机自带的音效会和皮肤的音效一起出现"]},
+    {name:"不会开关", count:23, type:"吐槽", examples:["按键音效如何关闭","按键音声音/皮肤按键音效如何关闭"]},
+    {name:"没有声音", count:21, type:"问题", examples:["我的键盘音量消失了其他按钮正常","皮肤按键音效没有声音震动有声音"]},
+    {name:"声音难听", count:12, type:"吐槽", examples:["这个雷霆音效也太难听了","皮肤挺好看就是皮肤自带音效难听好多皮肤都是这个破音效"]},
+  ]},
+  {rank:10, name:"键盘显示问题", count:81, subs:[
+    {name:"底部白条/导航栏留白", count:68, type:"问题", examples:["建议尽快配适三星手机虚拟导航栏目前没配适我看着那导航栏不想买皮肤","为什么你们的底部会有白条整了两天还是很难受","使用非默认皮肤时底部手势提示线没有同步深色模式"]},
+    {name:"键盘拉伸/抬高", count:3, type:"问题", examples:["调节键盘后皮肤拉伸了不好看","荣耀内屏双屏皮肤拉伸严重"]},
+  ]},
+  {rank:11, name:"字体相关问题", count:71, subs:[
+    {name:"希望自定义字体颜色", count:24, type:"建议", examples:["无法设置字体颜色导致自设皮肤时候需要更改气泡不然看不见字","键盘栏上的字体变黑色了皮肤原本是紫色的"]},
+    {name:"希望调节字体大小", count:20, type:"建议", examples:["为啥不能改皮肤键盘字体大小","字母太小了看着费劲这个皮肤是挺喜欢的"]},
+    {name:"字体找不到/问题", count:9, type:"问题", examples:["我想知道这个字体叫什么名字","有没有宝宝知道这个字体是哪一个"]},
+  ]},
+  {rank:12, name:"壁纸相关问题", count:23, subs:[
+    {name:"壁纸其他建议", count:11, type:"建议", examples:["买的皮肤套装包含壁纸但下载后显示已保存相册打开相册它自己自动删除了","能不能在选好的皮肤上换一个自己相册里的壁纸"]},
+    {name:"设置后自动消失", count:5, type:"问题", examples:["非人哉主题套装现在只能下载输入法皮肤没法下载壁纸头像","购买键盘皮肤套装的壁纸在手机相册删除之后就没有了"]},
+  ]},
+];
+
+const positiveDrillData = [
+  {rank:1, name:"皮肤好评", count:9260, subs:[
+    {name:"颜值/可爱度好评", count:2912, type:"好评", examples:["我宣布这是搜狗里面最可爱的皮肤之一","那个输入法皮肤好萌呀 我好喜欢嘿嘿","♡分享一个超萌的猫猫输入法皮肤~ 超可爱的恶魔猫猫！搜狗新出的主题！主打一个萌~粉粉的很少女心！"]},
+    {name:"皮肤通用好评", count:2298, type:"好评", examples:["终于换了我的输入法皮肤了","输入法新皮肤","原创二传美化 搜狗 百变小猪，背光皮，很可爱的一款皮肤"]},
+    {name:"推荐/安利/晒皮肤", count:1965, type:"好评", examples:["推荐「雨瑾」皮肤给你啦！「雨瑾」皮肤好漂亮哦赶紧来搜狗输入法围观吧！","【推荐「黄星皮肤」皮肤给你啦！】「黄星皮肤」皮肤好漂亮哦赶紧来搜狗输入法围观吧！","推荐「雨瑾2」皮肤给你啦！「雨瑾2」皮肤好漂亮哦赶紧来搜狗输入法围观吧！"]},
+    {name:"免费皮肤好评", count:1263, type:"好评", examples:["喜羊羊与灰太狼联动搜狗输入法，专属联动皮肤免费启用，全员可爱猫化萌到犯规","给老婆们安利一个搜狗输入法的免费的键盘皮肤，我感觉好美萌","搜狗免费皮肤是性价比最高的装扮"]},
+    {name:"饭圈定制/应援皮肤", count:456, type:"好评", examples:["橹穆LuMu520定制键盘套装上线，定制输入法皮肤，梦幻蓝粉应援色系键盘+橹穆Q版形象","彰冬酱520快乐！制作了wl2输入法皮肤可以plq自取","设计了一套开推超燃宁的电脑壁纸 手机搜狗/百度输入法皮肤"]},
+    {name:"购买/付费好评", count:270, type:"好评", examples:["上班赚的钱有一些都花给了搜狗输入法买皮肤给自己上班打字提供点情绪价值了","又买了两个搜狗皮肤","最近也太爱自己了吧，毫不犹豫全款拿下八元搜狗输入法皮肤"]},
+    {name:"自制/创作皮肤分享", count:96, type:"好评", examples:["自制的搜狗皮肤自动轮换皮组合特别版 返场一下之前做的水果集魔盒组合皮","做了一个搜狗键盘皮肤？背景是之前约的一个糕糕 我发现这个居然还能分享","用以前的图做了一个简易的搜狗输入法皮肤"]},
+  ]},
+  {rank:2, name:"壁纸好评", count:849, subs:[
+    {name:"壁纸好评", count:849, type:"好评", examples:["好清新的输入法和手机主题呀！真的好喜欢这个皮肤呀名字叫《林间小屋》壁纸挺不好做的","搜狗输入法 键盘皮肤带的壁纸","快来看这个超绝壁纸，还有搜狗皮肤哦"]},
+  ]},
+  {rank:3, name:"字体好评", count:115, subs:[
+    {name:"字体好评", count:115, type:"好评", examples:["一有空了就一头扎进主题商店和搜狗输入法找我喜欢的皮肤和字体装扮我的手机","搜狗输入法的新年皮肤+主页自选推荐字体ttf","搜狗免费字体，沉默不语存存"]},
+  ]},
+  {rank:4, name:"按键音好评", count:186, subs:[
+    {name:"按键音好评", count:186, type:"好评", examples:["所有人马上下载搜狗拼音输入法使用这个皮肤，按键音效巨清脆虽然觉得这个皮肤不好看但是音效太好听了","好多年没用手机版搜狗居然这么花里胡哨键盘音还能弹乐器好好玩","推荐搜狗键盘，声音好听"]},
+  ]},
+  {rank:5, name:"皮肤制造机好评", count:100, subs:[
+    {name:"创作大赛/投票", count:81, type:"好评", examples:["第二节搜狗皮肤大赛皮肤可以用啦～","搜狗皮肤大赛前十","终于和我最常用的输入法联名了！"]},
+    {name:"皮肤制造机功能好评", count:18, type:"好评", examples:["我今天发现搜狗输入法可以自己定制键盘皮肤可以放自己喜欢的图去玩这个","小熊甜梦手残党也能DIY专属键盘皮肤 用搜狗的AI皮肤制作5分钟就DIY出这套","搜狗输入法也可以AI皮肤啦~是萌萌的🐶我自己DIY的输入法皮肤"]},
+    {name:"自制皮肤分享", count:1, type:"好评", examples:["我制作了：【推荐「打雪仗吗」皮肤给你啦！】「打雪仗吗」皮肤好漂亮哦赶紧来搜狗输入法围观吧！"]},
+  ]},
+  {rank:6, name:"哇哦主题好评", count:36, subs:[
+    {name:"哇哦主题好评", count:36, type:"好评", examples:["搜狗丨晚安小羊🐏我做搜狗啦！搜狗皮丨晚安小羊丨哇哦主题 双色丨冒头动效","搜狗输入法主题定制皮肤","两个皮肤二选一 喜欢辰光的动效"]},
+  ]},
+];
+
+const neutralDrillData = [
+  {rank:1, name:"希望增加更多皮肤", count:367, subs:[
+    {name:"希望增加更多皮肤", count:367, type:"建议", examples:["皮肤没有多样性","搜狗输入法皮肤怎么更新的那么慢能不能好看的像百度输入法一样出点好看的皮肤呢","搜索不到我想要的键盘皮肤","能出点好看的皮肤嘛？加强博主排期出的这些东西看的真的力竭了"]},
+  ]},
+  {rank:2, name:"希望找回已下架皮肤", count:334, subs:[
+    {name:"希望找回已下架皮肤", count:334, type:"建议", examples:["更新了输入法双人机场皮肤再也搜不到了 有没有人能分享一下跪求啊","之前的皮肤都消失不见了","我们的新皮肤就没了成了这个皮肤一点都不好看快还给我们原来键盘"]},
+  ]},
+  {rank:3, name:"皮肤其他建议", count:291, subs:[
+    {name:"皮肤其他建议", count:291, type:"建议", examples:["怎么取消已购皮肤","可以每一个星期更新一次皮肤啊","我的键盘皮肤是光与夜之恋萧逸的但是那个动态浮层是一直黄色小狗要咋把这小狗去掉","搜狗能不能出个皮肤以旧换新呢"]},
+  ]},
+  {rank:4, name:"退款/误买/未成年", count:367, subs:[
+    {name:"误买/一般退款", count:178, type:"建议", examples:["不小心误触碰直接付费购买请求全额退款","帮我转人工我买的皮肤数据都没了有付款记录但无法启动退款谢谢","皮肤退款"]},
+    {name:"未成年退款", count:39, type:"建议", examples:["未成年人未经家长同意多次购买键盘皮肤怎么退款","小孩点了希望学的输入法皮肤扣费了很多个3元","孩子不小心购买了皮肤如何退款"]},
+    {name:"试用不符退款", count:14, type:"建议", examples:["我不小心误触下单购买发现皮肤显示效果和宣传不一样申请全额退款","买的皮肤和介绍的不符申请退款","购买了猫和老鼠85周年庆典套装但20种状态虚假宣传申请退款"]},
+  ]},
+  {rank:5, name:"皮肤制造机建议", count:202, subs:[
+    {name:"希望删除AI创作记录", count:38, type:"建议", examples:["不能删除我的创作记录AI皮肤","皮肤制造机-ai皮肤记录能删除吗？点击进入后还一直给我ai生成皮肤","AI皮肤创作记录里大量生成失败的记录无法删除请求后台强制清空"]},
+    {name:"希望支持二次编辑", count:14, type:"建议", examples:["建议自定义皮肤可以进行二次修改导出来贴纸位置就移动了还不能修改真的很痛苦","自定义皮肤怎么样才能使用原图不想要AI制作皮肤","皮肤换自己照片不要AI制作"]},
+    {name:"希望上架商城让别人搜到", count:14, type:"建议", examples:["商城无法搜索皮肤","我上传了皮肤为什么别人搜不到我的名字","怎样将制造的皮肤上架商城？"]},
+    {name:"其他建议", count:134, type:"建议", examples:["制作皮肤的时候那个贴纸能不能自定义","我想保存我的皮肤但是原图我没有了现在想用新皮肤又怕旧的没了","一键AI制作皮肤不好用还是以前自己可以制作的好"]},
+  ]},
+  {rank:6, name:"哇哦主题建议", count:64, subs:[
+    {name:"跨端使用", count:11, type:"建议", examples:["皮肤买在微信账号上登录的搜狗账号绑了微信没法同步","电脑版无法导入账号数据导致购买的皮肤无法使用"]},
+    {name:"试用/效果不符", count:5, type:"建议", examples:["想换皮肤买的皮肤换成其他的皮肤行吗","希望可以给试用想看下效果有些皮肤得花钱又不给试用"]},
+    {name:"支付方式", count:4, type:"建议", examples:["购买哇哦皮肤不支持支付宝付款","目前皮肤购买仅支持微信支付什么时候可以开通支付宝"]},
+    {name:"其他", count:42, type:"建议", examples:["能不能把哇哦主题的作者标出来点击就可以进入她主页","OPPO所有购买的皮肤夜间模式均无法适配底部变色"]},
+  ]},
+  {rank:7, name:"字体相关建议", count:57, subs:[
+    {name:"希望自定义字体颜色", count:24, type:"建议", examples:["无法设置字体颜色导致自设皮肤时候需要更改气泡不然看不见字","不喜欢默认皮肤字体的颜色","图一是默认的英文字体看着很不舒服能不能加上改变字体颜色等功能"]},
+    {name:"希望调节字体大小", count:20, type:"建议", examples:["搜狗输入法有好有坏为啥不能改皮肤键盘字体大小","字母太小了看着费劲这个皮肤是挺喜欢的","皮肤退款按键空间间隔极大无法调整字体无法更换"]},
+    {name:"希望跟随系统字体", count:5, type:"建议", examples:["为什么一直给我换成皮肤自带的字体我想要我系统的字体","键盘皮肤上的字体如何更改为和系统一样"]},
+  ]},
+  {rank:8, name:"试用/效果不符", count:51, subs:[
+    {name:"试用/效果不符", count:51, type:"建议", examples:["手机输入法收费皮肤能否有试用功能否则不确定一套皮肤是否真的值得购买","买的键盘皮肤和介绍的不符","购买了猫和老鼠85周年庆典套装但20种状态虚假宣传使用过程中根本就没有其他状态出现"]},
+  ]},
+  {rank:9, name:"按键音建议", count:50, subs:[
+    {name:"希望自定义按键音效", count:9, type:"建议", examples:["怎么自定义音效啊想要轻盈灵动点的打字音效喜欢的音效键盘皮肤不喜欢可不可以把音效单独出一个呀","我更换了一个键盘皮肤但是我不喜欢它的按键音效想在不更改皮肤的情况下将按键音效恢复成原版默认音效","可以增加一些按键自定义音效吗？按键音也可以做成像皮肤那样的单项购买呀"]},
+    {name:"其他建议", count:35, type:"建议", examples:["希望工程师可以把键盘音效振动里面按键音效可以加个功能所有皮肤可以统一更换音效","为什么购买了键盘皮肤以后不能换打字音效了","能不能出一个每个键盘调好声音就不要改动的功能"]},
+  ]},
+  {rank:10, name:"跨端同步", count:46, subs:[
+    {name:"跨端同步", count:46, type:"建议", examples:["你好我在电脑端买了皮肤为什么我现在登录平板用不了了","电脑版无法导入账号数据导致购买的皮肤无法使用","电脑版购买的皮肤手机用不了吗"]},
+  ]},
+  {rank:11, name:"希望导入第三方皮肤", count:44, subs:[
+    {name:"希望导入第三方皮肤", count:44, type:"建议", examples:["搜狗烘焙糕手自加背光第三方导入使用不套壳","请问手机怎么导入皮肤","怎么从第三方导入皮肤"]},
+  ]},
+  {rank:12, name:"壁纸建议", count:29, subs:[
+    {name:"壁纸建议", count:29, type:"建议", examples:["买的皮肤套装包含壁纸但下载后显示已保存相册打开相册它自己自动删除了","能不能在选好的皮肤上换一个自己相册里的壁纸","花6块钱买搜狗输入法皮肤领取的壁纸拿走不谢"]},
+  ]},
+  {rank:13, name:"大九键支持皮肤", count:22, subs:[
+    {name:"大九键支持皮肤", count:22, type:"建议", examples:["希望大九键也支持换皮肤","我切换了一下大九键键盘然后皮肤就成默认的了原皮肤也没了","从24键切换到大九键之后再切回来我24键的皮肤会变成默认皮肤每次都要进app里面换太麻烦了"]},
+  ]},
+  {rank:14, name:"汪豆兑换皮肤", count:15, subs:[
+    {name:"汪豆兑换皮肤", count:15, type:"建议", examples:["建议：我要那么多汪豆干嘛你还不如出一个汪豆换皮肤的9块钱的键盘要90或者900个汪豆","汪豆可以买键盘皮肤吗或者兑换","希望出一个用汪豆兑换森林集系列皮肤的功能"]},
+  ]},
+  {rank:15, name:"默认蓝皮肤", count:14, subs:[
+    {name:"默认蓝皮肤", count:14, type:"建议", examples:["你好为什么安卓没有这个皮肤搜狗主题-蓝可以加上吗？","默认皮肤没有蓝色请尽快上线谢谢","原皮肤怎么没有蓝色的皮肤"]},
+  ]},
+];
+
+// ========== COMPETITOR DATA ==========
+const competitorData = [
+  {
+    "name": "百度输入法",
+    "total": 386,
+    "positive": 300,
+    "negative": 28,
+    "neutral": 58,
+    "color": "#2563eb",
+    "icon": "B",
+    "share": "68.0%",
+    "themes": [
+      {
+        "name": "皮肤/外观对比",
+        "count": 386
+      },
+      {
+        "name": "输入体验",
+        "count": 326
+      },
+      {
+        "name": "DIY/定制",
+        "count": 134
+      },
+      {
+        "name": "推荐/安利",
+        "count": 119
+      },
+      {
+        "name": "切换/更换",
+        "count": 111
+      },
+      {
+        "name": "功能对比",
+        "count": 82
+      },
+      {
+        "name": "付费/价格",
+        "count": 54
+      }
+    ],
+    "themeQuotes": {
+      "皮肤/外观对比": {
+        "正面": [
+          "设计了一套开推超燃宁的 电脑壁纸 手机搜狗/百度输入法皮肤。 跟着 @摩登兄弟刘宇宁  一起搜寻「铁证」 拨开层层迷雾  寻找真相✅   #刘宇宁开始推理吧#    有需要的姐妹可以【转发】后自取呦！   #刘宇宁壁纸#    #刘宇宁物料#    #刘宇宁输入法#       摩登兄弟     关",
+          "设计了一款粉粉宁～ 手机/电脑输入法皮肤和桌面壁纸 手机版这次百度搜狗都有做 有需要的姐妹可以【转发】后自取呦！  关注 @是六月啊丨  后点击下载链接指引↓：      网页链接     ‼️见评论区‼️ （未关注会显示微博不存在）     #刘宇宁壁纸#    #刘宇宁物料#    #刘宇宁输入",
+          "设计了一款粉粉宁～ 手机/电脑输入法皮肤和桌面壁纸 手机版这次百度搜狗都有做 有需要的姐妹可以【转发】后自取呦！  关注 @是六月啊丨  后点击下载链接指引↓：       ‼️见评论区‼️ （未关注会显示微博不存在）    #刘宇宁壁纸#  #刘宇宁物料#  #刘宇宁输入法#    @摩登兄弟刘宇"
+        ],
+        "中性": [
+          "搜狗输入法皮肤怎么更新的那么慢能不能好看的像百度输入法一样出点好看的皮肤呢",
+          "哪位宝宝会百度皮转搜狗皮啊，很喜欢百度皮的这款皮肤，可是搜狗没有 ，我有这个皮肤的网盘链接，但是不会转搜狗皮也不会提取，哪个好心的哥哥姐姐会啊 #搜狗输入法#  #原创二创美化#  #原创二创美化超话#   原创二传美化超话  ​​​",
+          "我才发现百度输入法皮肤比搜狗多"
+        ],
+        "负面": [
+          "能不能融合一下底栏，不管用什么皮肤都有一条白边，特别丑，隔壁百度都可以",
+          "搜狗啥时候能解决人物切割问题就好了，香百度那样，现在的人物切割毁了好多好萌的皮肤#搜狗输入法[话题]# #搜狗输入法皮肤[话题]# #美化[话题]# ##讨论[话题]# #无恶意纯属好奇[话题]# #手机美化[话题]#",
+          "搜狗某些三元皮肤丑的要是上在百度输入法一块钱都没人买"
+        ]
+      },
+      "输入体验": {
+        "正面": [
+          "设计了一套开推超燃宁的 电脑壁纸 手机搜狗/百度输入法皮肤。 跟着 @摩登兄弟刘宇宁  一起搜寻「铁证」 拨开层层迷雾  寻找真相✅   #刘宇宁开始推理吧#    有需要的姐妹可以【转发】后自取呦！   #刘宇宁壁纸#    #刘宇宁物料#    #刘宇宁输入法#       摩登兄弟     关",
+          "设计了一款粉粉宁～ 手机/电脑输入法皮肤和桌面壁纸 手机版这次百度搜狗都有做 有需要的姐妹可以【转发】后自取呦！  关注 @是六月啊丨  后点击下载链接指引↓：      网页链接     ‼️见评论区‼️ （未关注会显示微博不存在）     #刘宇宁壁纸#    #刘宇宁物料#    #刘宇宁输入",
+          "设计了一款粉粉宁～ 手机/电脑输入法皮肤和桌面壁纸 手机版这次百度搜狗都有做 有需要的姐妹可以【转发】后自取呦！  关注 @是六月啊丨  后点击下载链接指引↓：       ‼️见评论区‼️ （未关注会显示微博不存在）    #刘宇宁壁纸#  #刘宇宁物料#  #刘宇宁输入法#    @摩登兄弟刘宇"
+        ],
+        "中性": [
+          "搜狗输入法皮肤怎么更新的那么慢能不能好看的像百度输入法一样出点好看的皮肤呢",
+          "哪位宝宝会百度皮转搜狗皮啊，很喜欢百度皮的这款皮肤，可是搜狗没有 ，我有这个皮肤的网盘链接，但是不会转搜狗皮也不会提取，哪个好心的哥哥姐姐会啊 #搜狗输入法#  #原创二创美化#  #原创二创美化超话#   原创二传美化超话  ​​​",
+          "我才发现百度输入法皮肤比搜狗多"
+        ],
+        "负面": [
+          "搜狗啥时候能解决人物切割问题就好了，香百度那样，现在的人物切割毁了好多好萌的皮肤#搜狗输入法[话题]# #搜狗输入法皮肤[话题]# #美化[话题]# ##讨论[话题]# #无恶意纯属好奇[话题]# #手机美化[话题]#",
+          "搜狗某些三元皮肤丑的要是上在百度输入法一块钱都没人买",
+          "讯飞我实在没招了，百度也不好用，现在全靠你了，你可千万要争气，如果你也不行那我将启用Windows自带的输入法，总不能比Windows还差吧。搜狗还我买的皮肤钱"
+        ]
+      },
+      "DIY/定制": {
+        "正面": [
+          "哪位宝宝会百度皮转搜狗皮啊，很喜欢百度皮的这款皮肤，可是搜狗没有   ，我有这个皮肤的网盘链接，但是不会转搜狗皮也不会提取，哪个好心的哥哥姐姐会啊  #搜狗输入法#    #原创二创美化#    #原创二创美化超话#       原创二传美化",
+          "原创二传美化超话   分享端沐小伶籽老师的新作： 百度转搜狗的 醇香蜜语  十分之美味的一个皮肤，还有非常妙妙的飘屏！！功能键也加了美丽背光，还有好多小巧思，手感也是非常之灵动！！ p3注意事项一定要看！！  使用方法：安卓第三方导入（很方便！比套壳简单） （也可以套壳但是详见p3）  评论区 ​​",
+          "原创二传美化   哪位大佬会百度转搜狗，好想用这个搜狗皮肤"
+        ],
+        "中性": [
+          "哪位宝宝会百度皮转搜狗皮啊，很喜欢百度皮的这款皮肤，可是搜狗没有 ，我有这个皮肤的网盘链接，但是不会转搜狗皮也不会提取，哪个好心的哥哥姐姐会啊 #搜狗输入法#  #原创二创美化#  #原创二创美化超话#   原创二传美化超话  ​​​",
+          "好烦呐，最近搜狗的皮肤都没有百度的好看！！！！！！！！！！！！！！！！！！而且百度有好多第三方的那个皮肤好好看呀！！！我都想投奔百度了，但是我又舍不得我那么多的皮肤！！！！我都花了那么多钱了，你们能不能争点气？！！！！！还有就是我觉得你们这个键盘调节大小，对于手小的人其实特别不实用，百度的那个调节键",
+          "标题：上⭐️预览｜Yomi小春花🌸   正文：大动效➕小动效，闷闷➕脆脆，配套壁纸\n\t\nYomi短会3.0第一款哦[棒R]，喜欢宝宝快来加入我\n\t\n#每天都要晒键盘[话题]# #百度输入法皮肤[话题]# #百度输入法[话题]# #讯飞输入法[话题]# #搜狗输入法[话题]# #壁纸[话题]# #手机"
+        ],
+        "负面": [
+          "搜狗啥时候能解决人物切割问题就好了，香百度那样，现在的人物切割毁了好多好萌的皮肤#搜狗输入法[话题]# #搜狗输入法皮肤[话题]# #美化[话题]# ##讨论[话题]# #无恶意纯属好奇[话题]# #手机美化[话题]#",
+          "输入法底部有白条，并且无法通过设置调整，换用百度或者定制版搜狗输入法就没有，但是定制版有不能使用最新购买的皮肤",
+          "标题：搜狗输入法你超绘的比赛皮肤   正文：为什么实机颜色变淡了，清晰度也下降了？@搜狗输入法人工客服 @搜狗输入法技术支持 搜狗特色吗？\n难怪我觉得百度皮肤更清晰，搜狗更柔和。\n#搜狗输入法[话题]# #你超绘颜键盘皮肤创作大赛[话题]#"
+        ]
+      },
+      "推荐/安利": {
+        "正面": [
+          "46814 【】蹲输入法皮肤推荐，百度搜狗都可以但是我是小米版，第三方会有bug所以优先官方可买的，想要简约/复古风，一个5",
+          "标题：🔍输入法皮肤，种草推荐！   正文：新上架的渐行如风远键盘皮肤，适配苹果安卓百度搜狗讯飞输入法。\n镜面设计超有质感，最近补货很快，真的抢手！ #输入法键盘[话题]# #讯飞键盘[话题]# #键盘[话题]# #键盘背景图[话题]# #输入法皮肤[话题]# #镜面设计[话题]# #键盘皮肤[话题]",
+          "标题：这套欧崽星星人键盘皮肤让我欧气爆   正文：谁懂啊！把我的本命盲盒星星人做成输入法皮肤也太香了吧！💖\n软fufu的欧崽，星星人，气球和斑点狗，每一个按键都藏着小惊喜，粉糯配色直接戳中少女心～\n自带的漂浮特效，打字时就像在拆盲盒，连敲键盘都有欧气加持！\n不管是摸鱼聊天还是赶稿码字，手感丝滑不卡顿"
+        ],
+        "中性": [
+          "标题：搜狗输入法有没有类似百度浅云这种皮肤的   正文：习惯问题，感觉还是搜狗更好用，我当初是看到这个皮肤好好看，然后换的百度输入法还花了4块大洋买了这个皮肤。想问问搜狗有没有类似的#输入法皮肤[话题]# #推荐键盘[话题]# #字体推荐[话题]# #打字[话题]#",
+          "标题：真的没人支持一下这个键盘吗？   正文：好喜欢这个风格的键盘，真的没人支持一下吗？求求了，真的很期待这个键盘的动效，不敢想上了搜狗能多好看，只是上百度的话就没有开头动画和间隙动画了#键盘推荐[话题]# #高颜值键盘[话题]# #输入法皮肤[话题]# #搜狗键盘[话题]# #搜狗皮肤[话题]# ",
+          "标题：第三方搜狗皮肤在哪里   正文：真诚发问。 为什么网上这么多第三方百度输入法皮肤可以导入使用，却没有第三方搜狗皮肤，我指的是非官方商城的款式，到底为什么啊\n\t\n#输入法皮肤[话题]# #键盘打字[话题]# #推荐键盘[话题]# #搜狗输入法皮肤[话题]# #搜狗输入法[话题]# #输入法主题["
+        ],
+        "负面": [
+          "标题：求安利类似音效的搜狗皮   正文：想问一下，搜狗有没有类似这种按键音的皮肤\n在用的这款皮肤是百度输入法设计大赛的一款免费皮\n皮肤名称：萌物语\n作者：小羊呆呆脑\n只是切换到百度那边想着看一下皮肤设计大赛的结果，没想到被这款输入法音效硬控了\n好喜欢这种哒哒哒的音效\n求安利搜狗那边有木有类似的！\n\t",
+          "标题：强迫症狂喜🥳   正文：意外发现三星新系统三大金刚导航条和百度输入法自动融合了！！！\n搜狗输入法试了一下不行，暂时不用了。\n最近我将使用百度输入法，求推荐优秀作者\n已经知道食莓兽森林集和tomo酱啦\n目前比较喜欢的几个作者\n还想进点新货呀\n#输入法皮肤[话题]# #三星导航条[话题]#"
+        ]
+      },
+      "切换/更换": {
+        "正面": [
+          "设计了一套开推超燃宁的 电脑壁纸 手机搜狗/百度输入法皮肤。 跟着 @摩登兄弟刘宇宁  一起搜寻「铁证」 拨开层层迷雾  寻找真相✅   #刘宇宁开始推理吧#    有需要的姐妹可以【转发】后自取呦！   #刘宇宁壁纸#    #刘宇宁物料#    #刘宇宁输入法#       摩登兄弟     关",
+          "设计了一款粉粉宁～ 手机/电脑输入法皮肤和桌面壁纸 手机版这次百度搜狗都有做 有需要的姐妹可以【转发】后自取呦！  关注 @是六月啊丨  后点击下载链接指引↓：      网页链接     ‼️见评论区‼️ （未关注会显示微博不存在）     #刘宇宁壁纸#    #刘宇宁物料#    #刘宇宁输入",
+          "设计了一款粉粉宁～ 手机/电脑输入法皮肤和桌面壁纸 手机版这次百度搜狗都有做 有需要的姐妹可以【转发】后自取呦！  关注 @是六月啊丨  后点击下载链接指引↓：       ‼️见评论区‼️ （未关注会显示微博不存在）    #刘宇宁壁纸#  #刘宇宁物料#  #刘宇宁输入法#    @摩登兄弟刘宇"
+        ],
+        "中性": [
+          "哪位宝宝会百度皮转搜狗皮啊，很喜欢百度皮的这款皮肤，可是搜狗没有 ，我有这个皮肤的网盘链接，但是不会转搜狗皮也不会提取，哪个好心的哥哥姐姐会啊 #搜狗输入法#  #原创二创美化#  #原创二创美化超话#   原创二传美化超话  ​​​",
+          "最近百度输入法的键盘皮肤太吸引我了，尝试卸掉搜狗输入法，换成那个  ​​​",
+          "为了要用花里胡哨的键盘还要单独下载一个百度的iOS用户不多了。。 甚至张婉上一个键盘是搜狗的，，，就这样为了各种皮肤辗转于各种输入法中... ​​​"
+        ],
+        "负面": [
+          "搜狗输入法挺好的，但是我想有点反馈建议，就是能不能让小横条的背景颜色与皮肤颜色保持一致呢，我觉得这个并非做不到，我是从百度输入法转过来的，我觉得百度输入法就做的挺好",
+          "标题：感觉搜狗和百度输入法手感真的有差别   正文：上图搜狗下图百度，都是我很喜欢的皮肤\n之前一直没觉得皮肤能有什么手感而言，但是前段时间一直用的搜狗，昨天换到百度之后明显能感觉得到——\n百度的手感比较清脆，比较实在（？有点不太好形容）就是打字的话会很爽；搜狗有种duangduang的感觉，不管是兽",
+          "标题：VIVO手机用什么输入法啊   正文：你们的vivo手机都用的什么输入法，更新最新系统后支持随手切换输入法了。目前来看，讯飞的适配性要比搜狗更好，搜狗的其他皮肤都没办法做到底部栏沉浸，打字震动上我总觉得微信输入法震动怪怪的，所以卸载了。#vivo[话题]# #百度输入法[话题]# #讯飞输入法"
+        ]
+      },
+      "功能对比": {
+        "正面": [
+          "原创二传美化超话   分享端沐小伶籽老师的新作： 百度转搜狗的 醇香蜜语  十分之美味的一个皮肤，还有非常妙妙的飘屏！！功能键也加了美丽背光，还有好多小巧思，手感也是非常之灵动！！ p3注意事项一定要看！！  使用方法：安卓第三方导入（很方便！比套壳简单） （也可以套壳但是详见p3）  评论区 ​​",
+          "标题：🔍输入法皮肤，种草推荐！   正文：新上架的渐行如风远键盘皮肤，适配苹果安卓百度搜狗讯飞输入法。\n镜面设计超有质感，最近补货很快，真的抢手！ #输入法键盘[话题]# #讯飞键盘[话题]# #键盘[话题]# #键盘背景图[话题]# #输入法皮肤[话题]# #镜面设计[话题]# #键盘皮肤[话题]",
+          "标题：lleeのocean键盘🌊双系统可爱白肚皮萌化   正文：发现宝藏键盘皮肤啦🐬💙 这个海洋白肚皮系列也太治愈了吧🌊✨，搜狗和百度输入法都能完美适配，一键导入超方便🤗📱。每天对着蔚蓝键盘打字，感觉呼吸都是海风味道🌴🌞，可爱度爆表瞬间点亮沉闷屏幕🐳💦。安卓和苹果姐妹终于能共享同款快乐啦🍎🤝，学生党"
+        ],
+        "中性": [
+          "搜狗输入法皮肤怎么更新的那么慢能不能好看的像百度输入法一样出点好看的皮肤呢",
+          "好烦呐，最近搜狗的皮肤都没有百度的好看！！！！！！！！！！！！！！！！！！而且百度有好多第三方的那个皮肤好好看呀！！！我都想投奔百度了，但是我又舍不得我那么多的皮肤！！！！我都花了那么多钱了，你们能不能争点气？！！！！！还有就是我觉得你们这个键盘调节大小，对于手小的人其实特别不实用，百度的那个调节键",
+          "标题：搜狗输入法有没有类似百度浅云这种皮肤的   正文：习惯问题，感觉还是搜狗更好用，我当初是看到这个皮肤好好看，然后换的百度输入法还花了4块大洋买了这个皮肤。想问问搜狗有没有类似的#输入法皮肤[话题]# #推荐键盘[话题]# #字体推荐[话题]# #打字[话题]#"
+        ],
+        "负面": [
+          "能不能融合一下底栏，不管用什么皮肤都有一条白边，特别丑，隔壁百度都可以",
+          "开发者选项全部打开了还是不行，搜狗一直用的都很舒服，怎么这点不如百度了呢。动图自定义皮肤功能。",
+          "讯飞我实在没招了，百度也不好用，现在全靠你了，你可千万要争气，如果你也不行那我将启用Windows自带的输入法，总不能比Windows还差吧。搜狗还我买的皮肤钱"
+        ]
+      },
+      "付费/价格": {
+        "正面": [
+          "46814 【】蹲输入法皮肤推荐，百度搜狗都可以但是我是小米版，第三方会有bug所以优先官方可买的，想要简约/复古风，一个5",
+          "标题：超级无敌可爱的输入法皮肤   正文：宝马雕车香满路，月照长安花千树。\n凤箫声动玉壶转，笑语盈盈暗香去。\n一夜鱼龙舞，众里寻他千百度。\n蓦然回首，灯火阑珊处。\n#宝马长安花[话题]# #宝马长安花系列[话题]# #搜狗输入法皮肤[话题]# #文创小马上有钱[话题]#",
+          "标题：马年开运键盘🔮雀神附体日进斗金！   正文：谁懂啊！马年开运从换键盘开始✨ 粉嫩嫩的麻将主题也太戳少女心了，还有可爱修狗和嘎子姐加持！自带“雀神附体”buff，打字都像在摸好牌🀄️ 新年不管是码字搞钱还是线上搓麻，都要把把胡牌，日进斗金！已火速换上，好运接好接满～\n#每天都要晒键盘[话题]# "
+        ],
+        "中性": [
+          "好烦呐，最近搜狗的皮肤都没有百度的好看！！！！！！！！！！！！！！！！！！而且百度有好多第三方的那个皮肤好好看呀！！！我都想投奔百度了，但是我又舍不得我那么多的皮肤！！！！我都花了那么多钱了，你们能不能争点气？！！！！！还有就是我觉得你们这个键盘调节大小，对于手小的人其实特别不实用，百度的那个调节键",
+          "标题：搜狗输入法有没有类似百度浅云这种皮肤的   正文：习惯问题，感觉还是搜狗更好用，我当初是看到这个皮肤好好看，然后换的百度输入法还花了4块大洋买了这个皮肤。想问问搜狗有没有类似的#输入法皮肤[话题]# #推荐键盘[话题]# #字体推荐[话题]# #打字[话题]#",
+          "标题：这个圈子为什么变成这样。   正文：安卓手机+26键，是你们目标客户的最底层吗？\n\t\n安卓上机效果没有苹果清晰不说，\n26键还要惨遭五马分尸。\n\t\n自己端出来的广告也知道把九键放前面？也知道九键展示时间长点？生怕大家看到26键长什么样？\n\t\n不止一个键盘设计者这样了。无论搜狗百度都是这样。\n\t"
+        ],
+        "负面": [
+          "搜狗某些三元皮肤丑的要是上在百度输入法一块钱都没人买",
+          "皮肤越来越不好看，你学学人家百度啊！！！！！！我真服了，我看到小红书上人家好多漂亮的皮肤！？？！！！！！！你不让人家私人弄，那你自己倒是弄的好看啊，我可以接受你卖，你也可以卖的稍微贵一点，但是不好看！！！！！！",
+          "什么时候能让导航栏位置颜色与皮肤融色啊？百度讯飞都可以，就你搜狗还没有！买了皮肤不融色，白买了！！！"
+        ]
+      }
+    },
+    "insight": "百度是皮肤赛道最大威胁：386次提及占竞品总量68%。核心优势在①人物切割技术（搜狗无）②第三方皮肤生态丰富③皮肤数量碾压。用户多次表达\"百度皮转搜狗皮\"需求，印证百度皮肤设计吸引力。但百度提及多在\"对比\"语境中，并非真实流失。",
+    "feature": "百度是搜狗用户提及频率最高的竞品，386次提及占竞品总量68%。舆情呈现明显的\"对比驱动\"特征：\n\n① 人物切割技术被反复对比——百度支持人物精准抠图，搜狗缺少此功能导致人物皮肤效果打折，是用户吐槽最多的点\n② 第三方皮肤生态碾压——小红书大量\"百度皮转搜狗皮\"求助帖，用户因百度丰富的第三方皮肤资源而犹豫是否切换\n③ 皮肤数量感知优势——用户普遍认为\"百度皮肤比搜狗多\"，即便实际差距未必悬殊，认知落差已经形成\n④ 底栏沉浸适配——百度能实现导航栏颜色与皮肤融合，搜狗做不到，截图对比传播广\n⑤ DIY/定制体验——百度支持更灵活的键盘尺寸调节和自定义，手小用户倾向百度",
+    "userProfile": {
+      "gender": "女性略多（约55%），男性占比高于其他竞品",
+      "age": "18-35岁，覆盖学生+职场，年龄层比讯飞用户更宽",
+      "traits": ["技术对比型消费者","第三方生态依赖","DIY动手能力强","性价比敏感"],
+      "interests": ["第三方皮肤导入","人物切割特效皮肤","DIY自定义皮肤","大IP联名皮肤"],
+      "behavior": "活跃于小红书美化圈和微博超话，习惯跨平台对比搜狗和百度的皮肤效果，是\"百度皮转搜狗皮\"需求的主要推动者，经常在评论区求助皮肤转换方法",
+      "spendLevel": "中等偏低，偏好免费第三方皮肤，对官方付费皮肤购买意愿低于搜狗用户"
+    },
+    "uniqueFeatures": "① 人物切割技术：百度独有的人像抠图能力，使人物皮肤在键盘上的呈现效果远超搜狗，是用户切换百度的核心动力之一\n② 第三方皮肤生态：百度拥有活跃的第三方皮肤社区，用户可自由导入非官方皮肤，搜狗则限制较多\n③ 键盘尺寸自由调节：百度的键盘调节对手小用户更友好，搜狗的调节方案被多次吐槽不实用\n④ 底栏沉浸适配：百度皮肤可自动融合导航栏颜色，搜狗在第三方皮肤上仍留白边"
+  },
+  {
+    "name": "讯飞输入法",
+    "total": 148,
+    "positive": 112,
+    "negative": 9,
+    "neutral": 27,
+    "color": "#ea580c",
+    "icon": "飞",
+    "share": "26.1%",
+    "themes": [
+      {
+        "name": "皮肤/外观对比",
+        "count": 148
+      },
+      {
+        "name": "输入体验",
+        "count": 133
+      },
+      {
+        "name": "DIY/定制",
+        "count": 48
+      },
+      {
+        "name": "推荐/安利",
+        "count": 44
+      },
+      {
+        "name": "功能对比",
+        "count": 38
+      },
+      {
+        "name": "切换/更换",
+        "count": 36
+      },
+      {
+        "name": "付费/价格",
+        "count": 23
+      }
+    ],
+    "themeQuotes": {
+      "皮肤/外观对比": {
+        "正面": [
+          "周诗雨   🌧️  #周诗雨0411生日快乐#    周诗雨𝟎𝟒𝟏𝟏生日暨出道𝟐𝟗𝟒𝟏天应援企划  Part 28 — 周诗雨生日礼物&amp;amp;amp;后台餐食  又陪你走过一载春秋，以一份生日礼物，承载满心的牵挂与祝福。 愿岁月善待这个温柔且坚定的你，往后每一步都走在自己热爱的路上，不必迎",
+          "周诗雨   🌧️  #周诗雨0411生日快乐#    周诗雨𝟎𝟒𝟏𝟏生日暨出道𝟐𝟗𝟒𝟏天应援企划  Part 27 — 助演礼物&amp;amp;amp;助演餐食  感谢每一位助演嘉宾的倾力相伴与用心付出，并肩筑光，共赴美好，因你们而更加圆满。  听雨台为助演嘉宾准备了礼物和后台餐食，以心意传递谢意",
+          "原创二传美化超话 “ 百度＆讯飞＆KK”转搜狗  9皮组合 搜狗安卓 第三方皮肤  ➕按键背光…… 去年7月捣鼓的皮，好像年底那时候分享过一回了！ 昨天重新翻新（修复发现的瑕疵）！ 喜欢的宝宝，若需要的，自行重存一次！ 有效一天！ ​​​"
+        ],
+        "中性": [
+          "能不能修改键盘设置手感，包括字体大小和布局更加适合用户，详情参考讯飞输入法，人家的皮肤虽然不可以试用，但不会在跳转设置的时候跳广告，还有，你们的这个改字体大小，也不能看效果，也不能像讯飞输入法一样直接就是更舒适的打字模式，很不适合我们这种爱玩手机打字的，知道吗？",
+          "高强度洛克，这游戏真上瘾吧 特意为了洛克王国的皮肤下回来了搜狗输入法（）不过布局因为用惯了讯飞还是不习惯，但是搜狗的移动端感觉手感比讯飞好诶 顺带一提洛手的联动皮肤候选字颜色好浅，读字好费眼睛，还是换了个深色皮肤 ​​​",
+          "我希望有动效的皮肤，可以由用户自行决定要不要动效呈现，因为有时候那个皮肤很想用，但又习惯不了动效。讯飞输入法就是可以自己设置要不要动效显示的。"
+        ],
+        "负面": [
+          "这个问题我真的无语了，就是你一个搜狗输入法，然后呢你呢？又在这里我做一个皮肤关你什么屁事啊？还要登录，你是以为我们这些是未成年的吗？我们又不是未成年讯飞，你给我滚！🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏼🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕",
+          "终于有讯飞了 这个搜狗啥皮肤都要💰用的好不得劲 ​​​",
+          "什么时候能让导航栏位置颜色与皮肤融色啊？百度讯飞都可以，就你搜狗还没有！买了皮肤不融色，白买了！！！"
+        ]
+      },
+      "输入体验": {
+        "正面": [
+          "周诗雨   🌧️  #周诗雨0411生日快乐#    周诗雨𝟎𝟒𝟏𝟏生日暨出道𝟐𝟗𝟒𝟏天应援企划  Part 28 — 周诗雨生日礼物&amp;amp;amp;后台餐食  又陪你走过一载春秋，以一份生日礼物，承载满心的牵挂与祝福。 愿岁月善待这个温柔且坚定的你，往后每一步都走在自己热爱的路上，不必迎",
+          "周诗雨   🌧️  #周诗雨0411生日快乐#    周诗雨𝟎𝟒𝟏𝟏生日暨出道𝟐𝟗𝟒𝟏天应援企划  Part 27 — 助演礼物&amp;amp;amp;助演餐食  感谢每一位助演嘉宾的倾力相伴与用心付出，并肩筑光，共赴美好，因你们而更加圆满。  听雨台为助演嘉宾准备了礼物和后台餐食，以心意传递谢意",
+          "原来你叫黑猫尼昂啊…连键盘也是小黑猫哦！⌨️黑猫魔法使\n #输入法皮肤 #搜狗输入法 #讯飞输入法 #表情包"
+        ],
+        "中性": [
+          "能不能修改键盘设置手感，包括字体大小和布局更加适合用户，详情参考讯飞输入法，人家的皮肤虽然不可以试用，但不会在跳转设置的时候跳广告，还有，你们的这个改字体大小，也不能看效果，也不能像讯飞输入法一样直接就是更舒适的打字模式，很不适合我们这种爱玩手机打字的，知道吗？",
+          "高强度洛克，这游戏真上瘾吧 特意为了洛克王国的皮肤下回来了搜狗输入法（）不过布局因为用惯了讯飞还是不习惯，但是搜狗的移动端感觉手感比讯飞好诶 顺带一提洛手的联动皮肤候选字颜色好浅，读字好费眼睛，还是换了个深色皮肤 ​​​",
+          "我希望有动效的皮肤，可以由用户自行决定要不要动效呈现，因为有时候那个皮肤很想用，但又习惯不了动效。讯飞输入法就是可以自己设置要不要动效显示的。"
+        ],
+        "负面": [
+          "这个问题我真的无语了，就是你一个搜狗输入法，然后呢你呢？又在这里我做一个皮肤关你什么屁事啊？还要登录，你是以为我们这些是未成年的吗？我们又不是未成年讯飞，你给我滚！🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🏼🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🏼🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕🖕",
+          "讯飞输入法还挺好玩的，有些皮肤设计比搜狗输入法好看多了 *:ஐ٩(๑´ᵕ`)۶ஐ:* ​​​",
+          "讯飞我实在没招了，百度也不好用，现在全靠你了，你可千万要争气，如果你也不行那我将启用Windows自带的输入法，总不能比Windows还差吧。搜狗还我买的皮肤钱"
+        ]
+      },
+      "DIY/定制": {
+        "正面": [
+          "周诗雨   🌧️  #周诗雨0411生日快乐#    周诗雨𝟎𝟒𝟏𝟏生日暨出道𝟐𝟗𝟒𝟏天应援企划  Part 28 — 周诗雨生日礼物&amp;amp;amp;后台餐食  又陪你走过一载春秋，以一份生日礼物，承载满心的牵挂与祝福。 愿岁月善待这个温柔且坚定的你，往后每一步都走在自己热爱的路上，不必迎",
+          "周诗雨   🌧️  #周诗雨0411生日快乐#    周诗雨𝟎𝟒𝟏𝟏生日暨出道𝟐𝟗𝟒𝟏天应援企划  Part 27 — 助演礼物&amp;amp;amp;助演餐食  感谢每一位助演嘉宾的倾力相伴与用心付出，并肩筑光，共赴美好，因你们而更加圆满。  听雨台为助演嘉宾准备了礼物和后台餐食，以心意传递谢意",
+          "原创二传美化超话 “ 百度＆讯飞＆KK”转搜狗  9皮组合 搜狗安卓 第三方皮肤  ➕按键背光…… 去年7月捣鼓的皮，好像年底那时候分享过一回了！ 昨天重新翻新（修复发现的瑕疵）！ 喜欢的宝宝，若需要的，自行重存一次！ 有效一天！ ​​​"
+        ],
+        "中性": [
+          "标题：上⭐️预览｜Yomi小春花🌸   正文：大动效➕小动效，闷闷➕脆脆，配套壁纸\n\t\nYomi短会3.0第一款哦[棒R]，喜欢宝宝快来加入我\n\t\n#每天都要晒键盘[话题]# #百度输入法皮肤[话题]# #百度输入法[话题]# #讯飞输入法[话题]# #搜狗输入法[话题]# #壁纸[话题]# #手机",
+          "标题：怎么会有这么可爱的输入法！   正文：#讯飞输入法[话题]# #susu福福晒键盘[话题]# #苏新皓生日定制键盘[话题]#\n为了这个皮肤，抛弃了用了好多年的搜狗，但感觉更幸福了！聊天都觉得更有劲了(ﾉ&amp;#34;◑ڡ◑)ﾉ",
+          "标题：为什么搜狗输入法不能自定义音效呢！！！   正文：我好喜欢讯飞输入法的一个键盘音效，但是搜狗的没有，我平时又特别喜欢且习惯用搜狗输入法，关键是搜狗有我推的IP……啊啊啊啊啊啊啊啊所以为什么搜狗输入法不能倒导入本地音效呢！！！\n#输入法皮肤[话题]# #输入法音效[话题]#"
+        ],
+        "负面": [
+          "你制作皮肤的时候，设置字体只要设置键盘上英文的字体不行吗，很多人手机有自己的字体，想换个英文的字体，结果键盘候选字的字体也被迫跟着换。我就是因为这个才去用了讯飞??"
+        ]
+      },
+      "推荐/安利": {
+        "正面": [
+          "标题：🔍输入法皮肤，种草推荐！   正文：新上架的渐行如风远键盘皮肤，适配苹果安卓百度搜狗讯飞输入法。\n镜面设计超有质感，最近补货很快，真的抢手！ #输入法键盘[话题]# #讯飞键盘[话题]# #键盘[话题]# #键盘背景图[话题]# #输入法皮肤[话题]# #镜面设计[话题]# #键盘皮肤[话题]",
+          "标题：分享｜面肥键盘合集   正文：#输入法皮肤[话题]# #高颜值键盘[话题]# #可爱键盘[话题]# #超可爱键盘壁纸[话题]# #输入法壁纸[话题]# #推荐键盘[话题]# #讯飞输入法[话题]# #搜狗输入法[话题]# #百度输入法[话题]# #键盘壁纸[话题]#",
+          "标题：蜡笔小新⌨️皮肤   正文：可爱的蜡笔小新键盘皮肤来咯\n#蜡笔小新键盘[话题]# #高颜值键盘[话题]# #超可爱键盘壁纸[话题]# #推荐键盘[话题]#  #键盘壁纸[话题]# #百度输入法[话题]##讯飞输入法[话题]# #搜狗输入法[话题]#"
+        ],
+        "中性": [
+          "我以为这个软件它可以换这个字体皮肤，结果他不仅不能换，我要自己做键盘的时候也没有我喜欢的款式，总之我就是觉得这个软件不是特别好，不怎么推荐，而且里面免费的东西特别少，也就一两个，让我们这些不能充钱的学生党怎么办？还没有讯飞输入法，好用?????????????????????????????????",
+          "标题：万能的网友们 求推荐！！！   正文：有没有大空格 智能深色 可爱又简约的输入法键盘⌨️ 最好是能看清键盘上字母的 求推荐！！！#输入法皮肤[话题]# #安卓[话题]# #拜托各位了[话题]# #讯飞输入法[话题]# #百度输入法[话题]# #搜狗输入法皮肤[话题]# #每天都要晒键盘[话题]",
+          "输入键盘更新的基本没有大的改变，没没觉得有多新颖，花钱的比免费的多，以前还能自己制作皮肤，又方便又快捷，现在就不行了，只要自己想做皮肤，打开就是美图秀秀，我也不知道是怎么回事，就不能做了，打开不是美图秀秀，就是那种Ai，真没有讯飞输入法做的好啊做了视频还要GIF太啰嗦太繁琐了，多少年的搜狗用户了，这"
+        ],
+        "负面": []
+      },
+      "功能对比": {
+        "正面": [
+          "标题：🔍输入法皮肤，种草推荐！   正文：新上架的渐行如风远键盘皮肤，适配苹果安卓百度搜狗讯飞输入法。\n镜面设计超有质感，最近补货很快，真的抢手！ #输入法键盘[话题]# #讯飞键盘[话题]# #键盘[话题]# #键盘背景图[话题]# #输入法皮肤[话题]# #镜面设计[话题]# #键盘皮肤[话题]",
+          "你们就不能学学讯飞输入法吗？看看人家的功能多全面多好。你们搜狗输入法，唯一的好处就是，皮肤干净整洁，不花里胡哨，这一点挺好的",
+          "标题：🎨输入法皮肤上新啦！   正文：西风凉-0033镜面键盘皮肤上新啦！\n适配苹果安卓百度搜狗讯飞输入法。\n质感满满，日常使用超有感觉～ #新年马上玩桌游[话题]# ##行李箱的松弛感是轻出来[话题]# ##2026开年第一只包[话题]# #输入法皮肤[话题]# #镜面设计[话题]# #手机壁纸["
+        ],
+        "中性": [
+          "能不能修改键盘设置手感，包括字体大小和布局更加适合用户，详情参考讯飞输入法，人家的皮肤虽然不可以试用，但不会在跳转设置的时候跳广告，还有，你们的这个改字体大小，也不能看效果，也不能像讯飞输入法一样直接就是更舒适的打字模式，很不适合我们这种爱玩手机打字的，知道吗？",
+          "@腾讯搜狗输入法   @讯飞输入法   @百度输入法  能不能做一个系统皮肤，发送按钮在左边的，对左撇子友好一点",
+          "能不能出点明星的动态和静态皮肤 看看人家讯飞 要不是因为习惯问题 我都不想换回搜狗 你们在不出这个皮肤 我就扛不住换讯飞了 下面是人家讯飞输入法的皮肤 这是静态的 还有动态的还有歌 太超前了 你们快上啊"
+        ],
+        "负面": [
+          "讯飞我实在没招了，百度也不好用，现在全靠你了，你可千万要争气，如果你也不行那我将启用Windows自带的输入法，总不能比Windows还差吧。搜狗还我买的皮肤钱",
+          "标题：搜狗你看看你。。。   正文：三大输入法只有你还没有智能刷色，连微信输入法和vivo自带的都有，你自己看看下面突不突兀。。\n上个月发的反馈到现在都没有客服回应\n大晚上那个白条越看越难受，这个智能刷色很难做吗？\n#输入法皮肤[话题]# #搜狗输入法[话题]# #搜狗输入法难用[话题]# #百度输",
+          "标题：VIVO手机用什么输入法啊   正文：你们的vivo手机都用的什么输入法，更新最新系统后支持随手切换输入法了。目前来看，讯飞的适配性要比搜狗更好，搜狗的其他皮肤都没办法做到底部栏沉浸，打字震动上我总觉得微信输入法震动怪怪的，所以卸载了。#vivo[话题]# #百度输入法[话题]# #讯飞输入法"
+        ]
+      },
+      "切换/更换": {
+        "正面": [
+          "原创二传美化超话 “ 百度＆讯飞＆KK”转搜狗  9皮组合 搜狗安卓 第三方皮肤  ➕按键背光…… 去年7月捣鼓的皮，好像年底那时候分享过一回了！ 昨天重新翻新（修复发现的瑕疵）！ 喜欢的宝宝，若需要的，自行重存一次！ 有效一天！ ​​​",
+          "蒲熠星超话   20260226 巅峰单曲第一日打卡 ✓ 超会就只有大👌🏻有了🎺金币都不够换  有人发现我输入法换皮肤了嘛用搜狗后第一次做皮肤跟我之前讯飞用的是同一张嘿嘿  #蒲熠星 qq音乐超级巅峰之夜#    绘曦Astra的微博视频  ​​​",
+          "当时你给我说这个输入法好使  我那时候用的讯飞 转为搜狗和你用一个皮肤 现在我用习惯了 几千天了  你离开我了 但你带来的影响却一直陪着我。"
+        ],
+        "中性": [
+          "能不能修改键盘设置手感，包括字体大小和布局更加适合用户，详情参考讯飞输入法，人家的皮肤虽然不可以试用，但不会在跳转设置的时候跳广告，还有，你们的这个改字体大小，也不能看效果，也不能像讯飞输入法一样直接就是更舒适的打字模式，很不适合我们这种爱玩手机打字的，知道吗？",
+          "高强度洛克，这游戏真上瘾吧 特意为了洛克王国的皮肤下回来了搜狗输入法（）不过布局因为用惯了讯飞还是不习惯，但是搜狗的移动端感觉手感比讯飞好诶 顺带一提洛手的联动皮肤候选字颜色好浅，读字好费眼睛，还是换了个深色皮肤 ​​​",
+          "在我抛弃搜狗的时候，发现得用搜狗……我讯飞买的输入法皮肤怎么办 ​​​"
+        ],
+        "负面": [
+          "标题：VIVO手机用什么输入法啊   正文：你们的vivo手机都用的什么输入法，更新最新系统后支持随手切换输入法了。目前来看，讯飞的适配性要比搜狗更好，搜狗的其他皮肤都没办法做到底部栏沉浸，打字震动上我总觉得微信输入法震动怪怪的，所以卸载了。#vivo[话题]# #百度输入法[话题]# #讯飞输入法",
+          "你制作皮肤的时候，设置字体只要设置键盘上英文的字体不行吗，很多人手机有自己的字体，想换个英文的字体，结果键盘候选字的字体也被迫跟着换。我就是因为这个才去用了讯飞??"
+        ]
+      },
+      "付费/价格": {
+        "正面": [
+          "周诗雨   🌧️  #周诗雨0411生日快乐#    周诗雨𝟎𝟒𝟏𝟏生日暨出道𝟐𝟗𝟒𝟏天应援企划  Part 28 — 周诗雨生日礼物&amp;amp;amp;后台餐食  又陪你走过一载春秋，以一份生日礼物，承载满心的牵挂与祝福。 愿岁月善待这个温柔且坚定的你，往后每一步都走在自己热爱的路上，不必迎",
+          "周诗雨   🌧️  #周诗雨0411生日快乐#    周诗雨𝟎𝟒𝟏𝟏生日暨出道𝟐𝟗𝟒𝟏天应援企划  Part 27 — 助演礼物&amp;amp;amp;助演餐食  感谢每一位助演嘉宾的倾力相伴与用心付出，并肩筑光，共赴美好，因你们而更加圆满。  听雨台为助演嘉宾准备了礼物和后台餐食，以心意传递谢意",
+          "标题：马年开运键盘🔮雀神附体日进斗金！   正文：谁懂啊！马年开运从换键盘开始✨ 粉嫩嫩的麻将主题也太戳少女心了，还有可爱修狗和嘎子姐加持！自带“雀神附体”buff，打字都像在摸好牌🀄️ 新年不管是码字搞钱还是线上搓麻，都要把把胡牌，日进斗金！已火速换上，好运接好接满～\n#每天都要晒键盘[话题]# "
+        ],
+        "中性": [
+          "必须要登录才能要免费看视频领皮肤，讯飞输入法都不用登录就可以看视频免费领",
+          "在我抛弃搜狗的时候，发现得用搜狗……我讯飞买的输入法皮肤怎么办 ​​​",
+          "我一直想要一款草莓熊的粉色格子键盘皮肤我一直想要一款草莓熊的粉色格子键盘皮肤可是全都是六块的以后官方了可不可以呀把那些呃就是限制啊呃这个讯飞输入法里面的浏览不能放有不能放前只能上免费我我一直想要一款草莓熊的粉色格子键盘皮肤可是全都是六块的以后官方了可不可以呀把那些呃就是限制啊呃这个讯飞输入法里面的浏"
+        ],
+        "负面": [
+          "什么时候能让导航栏位置颜色与皮肤融色啊？百度讯飞都可以，就你搜狗还没有！买了皮肤不融色，白买了！！！",
+          "讯飞我实在没招了，百度也不好用，现在全靠你了，你可千万要争气，如果你也不行那我将启用Windows自带的输入法，总不能比Windows还差吧。搜狗还我买的皮肤钱"
+        ]
+      }
+    },
+    "insight": "讯飞是免费皮肤策略的主要威胁：148次提及占26%。用户反复提及讯飞\"免费领皮肤不用登录\"\"动效可开关\"。讯飞二十六键皮肤可以连在一起（搜狗只能做小格子），这是用户明确对比的技术差距。但讯飞整体提及量仅为百度1/3，威胁等级次之。",
+    "feature": "讯飞在皮肤赛道的舆情以\"免费\"和\"动效自由\"为核心标签：\n\n① 免费皮肤策略深入人心——用户反复提及\"讯飞免费领皮肤不用登录\"，对搜狗登录+广告的获取方式不满\n② 动效可自由开关——讯飞允许用户自行决定是否启用皮肤动效，搜狗缺乏此选项，习惯不了动效的用户被迫放弃\n③ 二十六键皮肤连体布局——讯飞26键可以连在一起呈现，搜狗只能做小格子分割，视觉效果差距明显\n④ 打字手感差异——部分用户认为讯飞打字手感更舒适，尤其键盘布局和字体大小调节更灵活\n⑤ 饭圈应援皮肤——讯飞在明星应援皮肤上有独特发力，部分用户为偶像皮肤切换至讯飞",
+    "userProfile": {
+      "gender": "女性偏多（约60%），但男性占比高于小红书渠道",
+      "age": "16-25岁为核心，学生党占比高，对免费内容敏感",
+      "traits": ["免费驱动型","动效敏感","偶像/饭圈文化参与者","实用性优先"],
+      "interests": ["免费皮肤","明星应援皮肤","动效皮肤","可自定义音效皮肤"],
+      "behavior": "因免费皮肤被吸引，对登录门槛和广告极度反感，习惯在多个输入法间切换比较，容易为偶像联动短期切换",
+      "spendLevel": "极低，偏好免费渠道获取皮肤，对付费皮肤抗拒度高"
+    },
+    "uniqueFeatures": "① 免费皮肤零门槛：讯飞无需登录即可通过看视频免费领皮肤，对比搜狗的登录+广告模式，用户体验优势显著\n② 动效自由开关：用户可自行决定皮肤动效是否启用，解决了\"喜欢皮肤设计但不习惯动效\"的痛点\n③ 26键连体布局：讯飞的二十六键可实现按键连体视觉效果，搜狗只能分割为小格子\n④ 自定义音效导入：讯飞支持键盘音效自定义，搜狗暂不支持本地音效导入"
+  },
+  {
+    "name": "微信输入法",
+    "total": 10,
+    "positive": 6,
+    "negative": 3,
+    "neutral": 1,
+    "color": "#07c160",
+    "icon": "W",
+    "share": "1.8%",
+    "themes": [
+      {
+        "name": "皮肤/外观对比",
+        "count": 10
+      },
+      {
+        "name": "输入体验",
+        "count": 10
+      },
+      {
+        "name": "切换/更换",
+        "count": 6
+      },
+      {
+        "name": "功能对比",
+        "count": 4
+      },
+      {
+        "name": "付费/价格",
+        "count": 2
+      },
+      {
+        "name": "推荐/安利",
+        "count": 1
+      }
+    ],
+    "themeQuotes": {
+      "皮肤/外观对比": {
+        "正面": [
+          "#键盘打字[话题]# 我用的是微信输入法，以前用的搜狗输入法没什么好看的打字皮肤换来换去还是最后用的简单的原生态打字皮肤",
+          "换了搜狗输入法 安排了一个皮肤 好漂亮好高清好清爽！！！ 用了一两年的微信输入法了 无皮肤纯白 满满的人机感",
+          "换了搜狗输入法 安排了一个皮肤 好漂亮好高清好清爽！！！ 用了一两年的微信输入法了 无皮肤纯白 满满的人机感 ​​​"
+        ],
+        "中性": [
+          "刷小红书看到一个搜狗的 小鸟的随动打字皮肤 5块大洋拿下 玩了一会之后觉得不怎么丝滑 还是微信输入法简约好用 5块钱没白花 起码买了个体验"
+        ],
+        "负面": [
+          "最近我的输入法错别字超级多，今天真的太多了，受不了，把微信输入法卸载了，怒下搜狗输入法！ 就是现在搜狗输入法皮肤怎么这么贵？好不容易找到一款免费的",
+          "标题：搜狗你看看你。。。   正文：三大输入法只有你还没有智能刷色，连微信输入法和vivo自带的都有，你自己看看下面突不突兀。。\n上个月发的反馈到现在都没有客服回应\n大晚上那个白条越看越难受，这个智能刷色很难做吗？\n#输入法皮肤[话题]# #搜狗输入法[话题]# #搜狗输入法难用[话题]# #百度输",
+          "标题：VIVO手机用什么输入法啊   正文：你们的vivo手机都用的什么输入法，更新最新系统后支持随手切换输入法了。目前来看，讯飞的适配性要比搜狗更好，搜狗的其他皮肤都没办法做到底部栏沉浸，打字震动上我总觉得微信输入法震动怪怪的，所以卸载了。#vivo[话题]# #百度输入法[话题]# #讯飞输入法"
+        ]
+      },
+      "输入体验": {
+        "正面": [
+          "#键盘打字[话题]# 我用的是微信输入法，以前用的搜狗输入法没什么好看的打字皮肤换来换去还是最后用的简单的原生态打字皮肤",
+          "换了搜狗输入法 安排了一个皮肤 好漂亮好高清好清爽！！！ 用了一两年的微信输入法了 无皮肤纯白 满满的人机感",
+          "换了搜狗输入法 安排了一个皮肤 好漂亮好高清好清爽！！！ 用了一两年的微信输入法了 无皮肤纯白 满满的人机感 ​​​"
+        ],
+        "中性": [
+          "刷小红书看到一个搜狗的 小鸟的随动打字皮肤 5块大洋拿下 玩了一会之后觉得不怎么丝滑 还是微信输入法简约好用 5块钱没白花 起码买了个体验"
+        ],
+        "负面": [
+          "最近我的输入法错别字超级多，今天真的太多了，受不了，把微信输入法卸载了，怒下搜狗输入法！ 就是现在搜狗输入法皮肤怎么这么贵？好不容易找到一款免费的",
+          "标题：搜狗你看看你。。。   正文：三大输入法只有你还没有智能刷色，连微信输入法和vivo自带的都有，你自己看看下面突不突兀。。\n上个月发的反馈到现在都没有客服回应\n大晚上那个白条越看越难受，这个智能刷色很难做吗？\n#输入法皮肤[话题]# #搜狗输入法[话题]# #搜狗输入法难用[话题]# #百度输",
+          "标题：VIVO手机用什么输入法啊   正文：你们的vivo手机都用的什么输入法，更新最新系统后支持随手切换输入法了。目前来看，讯飞的适配性要比搜狗更好，搜狗的其他皮肤都没办法做到底部栏沉浸，打字震动上我总觉得微信输入法震动怪怪的，所以卸载了。#vivo[话题]# #百度输入法[话题]# #讯飞输入法"
+        ]
+      },
+      "切换/更换": {
+        "正面": [
+          "#键盘打字[话题]# 我用的是微信输入法，以前用的搜狗输入法没什么好看的打字皮肤换来换去还是最后用的简单的原生态打字皮肤",
+          "换了搜狗输入法 安排了一个皮肤 好漂亮好高清好清爽！！！ 用了一两年的微信输入法了 无皮肤纯白 满满的人机感",
+          "换了搜狗输入法 安排了一个皮肤 好漂亮好高清好清爽！！！ 用了一两年的微信输入法了 无皮肤纯白 满满的人机感 ​​​"
+        ],
+        "中性": [],
+        "负面": [
+          "最近我的输入法错别字超级多，今天真的太多了，受不了，把微信输入法卸载了，怒下搜狗输入法！ 就是现在搜狗输入法皮肤怎么这么贵？好不容易找到一款免费的",
+          "标题：VIVO手机用什么输入法啊   正文：你们的vivo手机都用的什么输入法，更新最新系统后支持随手切换输入法了。目前来看，讯飞的适配性要比搜狗更好，搜狗的其他皮肤都没办法做到底部栏沉浸，打字震动上我总觉得微信输入法震动怪怪的，所以卸载了。#vivo[话题]# #百度输入法[话题]# #讯飞输入法"
+        ]
+      },
+      "功能对比": {
+        "正面": [
+          "标题：搜狗输入法IOS版还是得设置一下才好用   正文：搜狗输入法\n这么一搞\n清爽了一大半\n该关的都关掉\n最重要的是，嘿嘿，搜狗输入法用了个微信输入法风格的皮肤[偷笑R][偷笑R][偷笑R][偷笑R]#搜狗键盘[话题]# #搜狗皮肤[话题]# #搜狗输入法[话题]#"
+        ],
+        "中性": [
+          "刷小红书看到一个搜狗的 小鸟的随动打字皮肤 5块大洋拿下 玩了一会之后觉得不怎么丝滑 还是微信输入法简约好用 5块钱没白花 起码买了个体验"
+        ],
+        "负面": [
+          "标题：搜狗你看看你。。。   正文：三大输入法只有你还没有智能刷色，连微信输入法和vivo自带的都有，你自己看看下面突不突兀。。\n上个月发的反馈到现在都没有客服回应\n大晚上那个白条越看越难受，这个智能刷色很难做吗？\n#输入法皮肤[话题]# #搜狗输入法[话题]# #搜狗输入法难用[话题]# #百度输",
+          "标题：VIVO手机用什么输入法啊   正文：你们的vivo手机都用的什么输入法，更新最新系统后支持随手切换输入法了。目前来看，讯飞的适配性要比搜狗更好，搜狗的其他皮肤都没办法做到底部栏沉浸，打字震动上我总觉得微信输入法震动怪怪的，所以卸载了。#vivo[话题]# #百度输入法[话题]# #讯飞输入法"
+        ]
+      },
+      "付费/价格": {
+        "正面": [],
+        "中性": [
+          "刷小红书看到一个搜狗的 小鸟的随动打字皮肤 5块大洋拿下 玩了一会之后觉得不怎么丝滑 还是微信输入法简约好用 5块钱没白花 起码买了个体验"
+        ],
+        "负面": [
+          "最近我的输入法错别字超级多，今天真的太多了，受不了，把微信输入法卸载了，怒下搜狗输入法！ 就是现在搜狗输入法皮肤怎么这么贵？好不容易找到一款免费的"
+        ]
+      },
+      "推荐/安利": {
+        "正面": [
+          "标题：我感觉这几款真的是简约派的代表   正文：特别是第一款，敲字声音声音非常接近ios系统原因，我甚至来回切换原键盘和这款皮肤新鲜，我感觉是一模一样的，强烈推荐。第二款也好看，满足了又想搜狗输入法又想体验微信输入法的，第三款也不错，也很简约。\n强推第一款，#输入法[话题]# #搜狗[话题]# #搜"
+        ],
+        "中性": [],
+        "负面": []
+      }
+    },
+    "insight": "微信输入法代表极简主义 vs 搜狗装饰主义的路线分化。10次提及中30%负面（竞品最高），但负面实为\"逃离微信来到搜狗\"。正面用户心声：\"微信无皮肤纯白满满人机感\"→搜狗皮肤是差异化壁垒。核心警示：部分用户同时想要\"微信的简约+搜狗的皮肤\"。",
+    "feature": "微信输入法在皮肤赛道的舆情呈现鲜明的\"极简对立\"特征：\n\n① 无皮肤=纯净体验——微信输入法坚持无皮肤设计，部分用户将其视为\"清爽\"\"简约\"的代表，主动从搜狗切走\n② 底栏沉浸已实现——微信输入法已适配智能刷色/底栏沉浸，用户以此对比搜狗的不足\n③ 简约+皮肤的矛盾需求——部分用户希望\"搜狗皮肤的美观+微信的简约手感\"，暗示搜狗存在过度装饰倾向\n④ 从微信流向搜狗的案例——更多用户因微信无皮肤而流向搜狗，证明皮肤是搜狗的核心差异化\n⑤ 打字震感差异——微信输入法的震动反馈被部分用户认为\"怪怪的\"，搜狗手感更佳",
+    "userProfile": {
+      "gender": "男性比例较高（约50%），与搜狗主力用户群形成差异",
+      "age": "25-35岁职场用户为主，追求效率而非装饰",
+      "traits": ["极简主义","效率优先","功能导向","反感冗余装饰"],
+      "interests": ["纯净白底键盘","高效打字体验","微信生态联动","隐私保护"],
+      "behavior": "因微信生态默认使用微信输入法，对皮肤零需求，偶尔因看腻白底而尝试搜狗，但很快因广告/弹窗回流",
+      "spendLevel": "零付费意愿，认为输入法不该有付费内容"
+    },
+    "uniqueFeatures": "① 零皮肤策略=差异化反证：微信输入法的无皮肤路线从反面验证了皮肤是搜狗核心壁垒\n② 智能刷色/底栏沉浸：微信输入法虽无皮肤但已实现导航栏融合，搜狗在有皮肤的情况下反而做不到\n③ 微信生态绑定：与微信深度集成，剪贴板同步、表情推荐等生态功能形成使用粘性\n④ 极简打字体验：无广告、无弹窗、无皮肤推荐的纯净体验，对效率型用户有吸引力用户有吸引力"
+  },
+  {
+    "name": "苹果/系统输入法",
+    "total": 15,
+    "positive": 15,
+    "negative": 0,
+    "neutral": 0,
+    "color": "#86868b",
+    "icon": "i",
+    "share": "2.6%",
+    "themes": [
+      {
+        "name": "皮肤/外观对比",
+        "count": 15
+      },
+      {
+        "name": "输入体验",
+        "count": 15
+      },
+      {
+        "name": "切换/更换",
+        "count": 9
+      },
+      {
+        "name": "功能对比",
+        "count": 8
+      },
+      {
+        "name": "DIY/定制",
+        "count": 5
+      },
+      {
+        "name": "推荐/安利",
+        "count": 5
+      },
+      {
+        "name": "付费/价格",
+        "count": 4
+      }
+    ],
+    "themeQuotes": {
+      "皮肤/外观对比": {
+        "正面": [
+          "这个装扮玩爽了，狗屎ios自带输入法我再也不想用 皮肤链接导入百度或者搜狗就行",
+          "标题：救命！我被这个键盘美到不想打字了✨   正文：谁懂啊！在输入法皮肤的海洋里冲浪，居然挖到了这么可爱的宝藏💖\n平时自带输入法的皮肤看腻了，换上这种卡通款，整个屏幕都变得软乎乎的！\n不管是森梨漫野的清新绿🍃，还是猫猫熊过冬的治愈蓝🐼，又或是粉粉嫩嫩的垂耳暹罗兔🐰，每一款都像把快乐揉进了键盘里。按键",
+          "标题：谁的童年DNA动了！胡图图键盘皮肤太萌啦   正文：谁能拒绝可爱的胡图图啊！挖到了搜狗输入法的胡图图皮肤，真的一秒回到童年，实在是太可爱了～\n\t\n胡图图便利贴款💌\n软乎乎的浅粉奶黄配色，按键上全是图图的Q萌表情包，还有便利贴、小铅笔的手绘元素\n打字时仿佛在玩贴纸本，连悬浮层都配了图图的可爱语录"
+        ],
+        "中性": [],
+        "负面": []
+      },
+      "输入体验": {
+        "正面": [
+          "这个装扮玩爽了，狗屎ios自带输入法我再也不想用 皮肤链接导入百度或者搜狗就行",
+          "标题：救命！我被这个键盘美到不想打字了✨   正文：谁懂啊！在输入法皮肤的海洋里冲浪，居然挖到了这么可爱的宝藏💖\n平时自带输入法的皮肤看腻了，换上这种卡通款，整个屏幕都变得软乎乎的！\n不管是森梨漫野的清新绿🍃，还是猫猫熊过冬的治愈蓝🐼，又或是粉粉嫩嫩的垂耳暹罗兔🐰，每一款都像把快乐揉进了键盘里。按键",
+          "标题：谁的童年DNA动了！胡图图键盘皮肤太萌啦   正文：谁能拒绝可爱的胡图图啊！挖到了搜狗输入法的胡图图皮肤，真的一秒回到童年，实在是太可爱了～\n\t\n胡图图便利贴款💌\n软乎乎的浅粉奶黄配色，按键上全是图图的Q萌表情包，还有便利贴、小铅笔的手绘元素\n打字时仿佛在玩贴纸本，连悬浮层都配了图图的可爱语录"
+        ],
+        "中性": [],
+        "负面": []
+      },
+      "切换/更换": {
+        "正面": [
+          "标题：救命！我被这个键盘美到不想打字了✨   正文：谁懂啊！在输入法皮肤的海洋里冲浪，居然挖到了这么可爱的宝藏💖\n平时自带输入法的皮肤看腻了，换上这种卡通款，整个屏幕都变得软乎乎的！\n不管是森梨漫野的清新绿🍃，还是猫猫熊过冬的治愈蓝🐼，又或是粉粉嫩嫩的垂耳暹罗兔🐰，每一款都像把快乐揉进了键盘里。按键",
+          "标题：谁的童年DNA动了！胡图图键盘皮肤太萌啦   正文：谁能拒绝可爱的胡图图啊！挖到了搜狗输入法的胡图图皮肤，真的一秒回到童年，实在是太可爱了～\n\t\n胡图图便利贴款💌\n软乎乎的浅粉奶黄配色，按键上全是图图的Q萌表情包，还有便利贴、小铅笔的手绘元素\n打字时仿佛在玩贴纸本，连悬浮层都配了图图的可爱语录",
+          "标题：小米 17Ultra 输入自由！皮肤 + 音效绝了   正文：小米 17Ultra 性能没话说，但自带输入法也太单调了！换上新输入法直接原地封神，个性化体验拉满～\n皮肤库像开了任意门，极简、国潮、二次元、明星联名款应有尽有，还有动态皮肤带粒子特效，打字时界面都在 “呼吸”✨。每天换一款，手机新"
+        ],
+        "中性": [],
+        "负面": []
+      },
+      "功能对比": {
+        "正面": [
+          "标题：救命！我被这个键盘美到不想打字了✨   正文：谁懂啊！在输入法皮肤的海洋里冲浪，居然挖到了这么可爱的宝藏💖\n平时自带输入法的皮肤看腻了，换上这种卡通款，整个屏幕都变得软乎乎的！\n不管是森梨漫野的清新绿🍃，还是猫猫熊过冬的治愈蓝🐼，又或是粉粉嫩嫩的垂耳暹罗兔🐰，每一款都像把快乐揉进了键盘里。按键",
+          "标题：谁的童年DNA动了！胡图图键盘皮肤太萌啦   正文：谁能拒绝可爱的胡图图啊！挖到了搜狗输入法的胡图图皮肤，真的一秒回到童年，实在是太可爱了～\n\t\n胡图图便利贴款💌\n软乎乎的浅粉奶黄配色，按键上全是图图的Q萌表情包，还有便利贴、小铅笔的手绘元素\n打字时仿佛在玩贴纸本，连悬浮层都配了图图的可爱语录",
+          "标题：小米 17Ultra 输入自由！皮肤 + 音效绝了   正文：小米 17Ultra 性能没话说，但自带输入法也太单调了！换上新输入法直接原地封神，个性化体验拉满～\n皮肤库像开了任意门，极简、国潮、二次元、明星联名款应有尽有，还有动态皮肤带粒子特效，打字时界面都在 “呼吸”✨。每天换一款，手机新"
+        ],
+        "中性": [],
+        "负面": []
+      },
+      "DIY/定制": {
+        "正面": [
+          "这个装扮玩爽了，狗屎ios自带输入法我再也不想用 皮肤链接导入百度或者搜狗就行",
+          "标题：✨镜面输入法皮肤太绝了！安卓必冲   正文：最近被这款镜面输入法种草了\n安卓苹果都能用，双色设计很特别\n打字都变高级感满满～ #输入法皮肤[话题]# #安卓好物[话题]# #镜面设计[话题]# #双系统输入法[话题]# #键盘美化[话题]#",
+          "标题：niniの快乐星球键盘🌍双系统输入法   正文：宝子们！发现一款神仙输入法皮肤nini快乐星球🌍白肚皮键盘真的萌翻了🐾不管是安卓还是苹果都能用🍎📱打字瞬间变成治愈小剧场💕，按键音效也超级可爱哒🎵每天聊天都觉得心情变好了🥰，闺蜜看到都追着问链接🔗立刻分享给所有喜欢可爱键盘的姐妹🌸，而且主题超级多"
+        ],
+        "中性": [],
+        "负面": []
+      },
+      "推荐/安利": {
+        "正面": [
+          "标题：救命！我被这个键盘美到不想打字了✨   正文：谁懂啊！在输入法皮肤的海洋里冲浪，居然挖到了这么可爱的宝藏💖\n平时自带输入法的皮肤看腻了，换上这种卡通款，整个屏幕都变得软乎乎的！\n不管是森梨漫野的清新绿🍃，还是猫猫熊过冬的治愈蓝🐼，又或是粉粉嫩嫩的垂耳暹罗兔🐰，每一款都像把快乐揉进了键盘里。按键",
+          "标题：小米 17Ultra 输入自由！皮肤 + 音效绝了   正文：小米 17Ultra 性能没话说，但自带输入法也太单调了！换上新输入法直接原地封神，个性化体验拉满～\n皮肤库像开了任意门，极简、国潮、二次元、明星联名款应有尽有，还有动态皮肤带粒子特效，打字时界面都在 “呼吸”✨。每天换一款，手机新",
+          "标题：✨镜面输入法皮肤太绝了！安卓必冲   正文：最近被这款镜面输入法种草了\n安卓苹果都能用，双色设计很特别\n打字都变高级感满满～ #输入法皮肤[话题]# #安卓好物[话题]# #镜面设计[话题]# #双系统输入法[话题]# #键盘美化[话题]#"
+        ],
+        "中性": [],
+        "负面": []
+      },
+      "付费/价格": {
+        "正面": [
+          "标题：救命！我被这个键盘美到不想打字了✨   正文：谁懂啊！在输入法皮肤的海洋里冲浪，居然挖到了这么可爱的宝藏💖\n平时自带输入法的皮肤看腻了，换上这种卡通款，整个屏幕都变得软乎乎的！\n不管是森梨漫野的清新绿🍃，还是猫猫熊过冬的治愈蓝🐼，又或是粉粉嫩嫩的垂耳暹罗兔🐰，每一款都像把快乐揉进了键盘里。按键",
+          "标题：谁的童年DNA动了！胡图图键盘皮肤太萌啦   正文：谁能拒绝可爱的胡图图啊！挖到了搜狗输入法的胡图图皮肤，真的一秒回到童年，实在是太可爱了～\n\t\n胡图图便利贴款💌\n软乎乎的浅粉奶黄配色，按键上全是图图的Q萌表情包，还有便利贴、小铅笔的手绘元素\n打字时仿佛在玩贴纸本，连悬浮层都配了图图的可爱语录",
+          "标题：小米 17Ultra 输入自由！皮肤 + 音效绝了   正文：小米 17Ultra 性能没话说，但自带输入法也太单调了！换上新输入法直接原地封神，个性化体验拉满～\n皮肤库像开了任意门，极简、国潮、二次元、明星联名款应有尽有，还有动态皮肤带粒子特效，打字时界面都在 “呼吸”✨。每天换一款，手机新"
+        ],
+        "中性": [],
+        "负面": []
+      }
+    },
+    "insight": "系统自带输入法是搜狗最好的\"反面教材\"：15次提及100%正面，全部是\"逃离自带→拥抱搜狗皮肤\"。用户原话：\"狗屎ios自带输入法我再也不想用\"。这证明皮肤/装饰能力是搜狗相对系统输入法的核心差异化价值。",
+    "feature": "系统自带输入法在皮肤维度的舆情几乎全部是\"逃离叙事\"：\n\n① 自带=单调=无趣——用户对iOS/系统输入法的皮肤能力极度不满，认为只有白色背景缺乏个性\n② 皮肤=逃离理由——用户明确因搜狗的皮肤生态而从系统输入法切换过来，是搜狗获客的正向来源\n③ DIY需求溢出——系统输入法不支持皮肤定制，用户转向搜狗/百度满足个性化需求\n④ 全面屏适配问题——小米等品牌自带输入法也被吐槽单调，换用搜狗后体验显著提升\n⑤ 品牌联动吸引力——搜狗的IP联名皮肤（胡图图、喜羊羊等）对系统输入法用户有强吸引力",
+    "userProfile": {
+      "gender": "男女均衡，偏年轻用户",
+      "age": "16-30岁，初次尝试第三方输入法的学生和新用户为主",
+      "traits": ["个性化需求觉醒","对默认状态不满","被IP/联名吸引","换机/换系统触发"],
+      "interests": ["卡通IP皮肤","可爱萌系","明星联名","节日限定"],
+      "behavior": "因系统输入法太单调而主动搜索替代品，在小红书/微博看到安利后尝试搜狗，皮肤是首个体验功能",
+      "spendLevel": "初期以免费皮肤为主，体验满意后逐步尝试付费皮肤"
+    },
+    "uniqueFeatures": "① 零皮肤能力=搜狗获客入口：系统输入法完全不支持皮肤，是搜狗最清晰的差异化场景\n② 系统级稳定性优势：自带输入法不闪退、不卡顿、不弹广告，部分用户因此不愿切换\n③ 隐私信任优势：系统输入法无第三方数据收集风险，隐私敏感用户倾向保留\n④ 与搜狗的互补关系：系统输入法用户流向搜狗是单方向的，几乎不存在从搜狗回流系统输入法的皮肤相关舆情皮肤相关舆情"
+  },
+  {
+    "name": "QQ输入法",
+    "total": 6,
+    "positive": 6,
+    "negative": 0,
+    "neutral": 0,
+    "color": "#12b7f5",
+    "icon": "Q",
+    "share": "1.1%",
+    "themes": [
+      {
+        "name": "皮肤/外观对比",
+        "count": 6
+      },
+      {
+        "name": "输入体验",
+        "count": 6
+      },
+      {
+        "name": "推荐/安利",
+        "count": 2
+      },
+      {
+        "name": "切换/更换",
+        "count": 1
+      }
+    ],
+    "themeQuotes": {
+      "皮肤/外观对比": {
+        "正面": [
+          "#音乐皮肤# 对比了几个输入法， @QQ输入法  皮肤真的很漂亮，强烈推荐「王者荣耀-神鹿」    网页链接  ​​​",
+          "#音乐皮肤#  对比了几个输入法， @QQ输入法  皮肤真的很漂亮，强烈推荐「王者荣耀-神鹿」       网页链接",
+          "#音乐皮肤#  这个「想得美·盲打」皮肤不错哦，小伙伴们快来围观  @QQ输入法         网页链接"
+        ],
+        "中性": [],
+        "负面": []
+      },
+      "输入体验": {
+        "正面": [
+          "#音乐皮肤# 对比了几个输入法， @QQ输入法  皮肤真的很漂亮，强烈推荐「王者荣耀-神鹿」    网页链接  ​​​",
+          "#音乐皮肤#  对比了几个输入法， @QQ输入法  皮肤真的很漂亮，强烈推荐「王者荣耀-神鹿」       网页链接",
+          "#音乐皮肤#  这个「想得美·盲打」皮肤不错哦，小伙伴们快来围观  @QQ输入法         网页链接"
+        ],
+        "中性": [],
+        "负面": []
+      },
+      "推荐/安利": {
+        "正面": [
+          "#音乐皮肤# 对比了几个输入法， @QQ输入法  皮肤真的很漂亮，强烈推荐「王者荣耀-神鹿」    网页链接  ​​​",
+          "#音乐皮肤#  对比了几个输入法， @QQ输入法  皮肤真的很漂亮，强烈推荐「王者荣耀-神鹿」       网页链接"
+        ],
+        "中性": [],
+        "负面": []
+      },
+      "切换/更换": {
+        "正面": [
+          "#音乐皮肤#  哈哈哈，换皮肤换得停不下来，尤其这个「奶茶鼠的想法」真心赞！  @QQ输入法         网页链接"
+        ],
+        "中性": [],
+        "负面": []
+      }
+    },
+    "insight": "QQ输入法提及量极低（6次），均为正面，内容以QQ输入法自身皮肤推荐为主（来自QQ输入法官方话题），与搜狗皮肤关联性弱。威胁等级：可忽略。",
+    "feature": "QQ输入法在皮肤舆情的存在感极低，仅6次提及且全部正面：\n\n① 官方话题驱动为主——提及内容多来自QQ输入法官方#音乐皮肤#话题，用户自发讨论少\n② 王者荣耀联名皮肤——「王者荣耀-神鹿」皮肤是唯一被反复提及的亮点\n③ 趣味皮肤获好评——「奶茶鼠的想法」「想得美·盲打」等创意皮肤获得用户喜爱\n④ 与搜狗关联弱——提及中几乎不涉及与搜狗的直接对比，属平行存在\n⑤ 腾讯生态协同——作为腾讯系产品，与QQ生态的联动是其潜在优势",
+    "userProfile": {
+      "gender": "男女均衡，年轻用户为主",
+      "age": "15-25岁，QQ核心用户群，学生为主",
+      "traits": ["QQ生态依赖","游戏文化偏好","趣味互动型","对皮肤需求度低"],
+      "interests": ["游戏联名皮肤","趣味创意皮肤","音乐皮肤","QQ生态联动"],
+      "behavior": "因QQ社交关系链使用QQ输入法，皮肤是锦上添花而非核心驱动力，偶尔被官方话题吸引尝试新皮肤",
+      "spendLevel": "极低，依赖官方免费活动和话题奖励获取皮肤"
+    },
+    "uniqueFeatures": "① 腾讯生态联动：背靠QQ社交生态，可复用腾讯IP资源（王者荣耀等），与搜狗形成同系竞合关系\n② 音乐皮肤概念：QQ输入法提出的音乐皮肤概念有一定新意，但用户认知度低\n③ 用户基数与活跃度不匹配：QQ用户量庞大但QQ输入法皮肤讨论极低，产品力不足\n④ 与搜狗的竞合关系：同为腾讯系产品，QQ输入法的皮肤策略不会与搜狗正面竞争，更像生态补充更像生态补充"
+  },
+  {
+    "name": "Gboard",
+    "total": 2,
+    "positive": 1,
+    "negative": 1,
+    "neutral": 0,
+    "color": "#4285f4",
+    "icon": "G",
+    "share": "0.4%",
+    "themes": [
+      {
+        "name": "皮肤/外观对比",
+        "count": 2
+      },
+      {
+        "name": "输入体验",
+        "count": 1
+      },
+      {
+        "name": "功能对比",
+        "count": 1
+      },
+      {
+        "name": "DIY/定制",
+        "count": 1
+      }
+    ],
+    "themeQuotes": {
+      "皮肤/外观对比": {
+        "正面": [
+          "标题：vivo iQOO手机输入法选择   正文：这三个是我常用的输入法，经常来回使用[萌萌哒R]现在可能用搜狗输入法多一点，喜欢它这个简约淡彩的输入法皮肤[大笑R]#搜狗输入法[话题]# #Gboard[话题]# #vivo输入法pro[话题]# #输入法双拼[话题]#"
+        ],
+        "中性": [],
+        "负面": [
+          "啥时候能优化一下第三方皮肤小白条沉浸啊，好丑啊，百度，微信，Gboard那些都适配了，搜狗的就默认皮肤可以，其他不行，"
+        ]
+      },
+      "输入体验": {
+        "正面": [
+          "标题：vivo iQOO手机输入法选择   正文：这三个是我常用的输入法，经常来回使用[萌萌哒R]现在可能用搜狗输入法多一点，喜欢它这个简约淡彩的输入法皮肤[大笑R]#搜狗输入法[话题]# #Gboard[话题]# #vivo输入法pro[话题]# #输入法双拼[话题]#"
+        ],
+        "中性": [],
+        "负面": []
+      },
+      "功能对比": {
+        "正面": [],
+        "中性": [],
+        "负面": [
+          "啥时候能优化一下第三方皮肤小白条沉浸啊，好丑啊，百度，微信，Gboard那些都适配了，搜狗的就默认皮肤可以，其他不行，"
+        ]
+      },
+      "DIY/定制": {
+        "正面": [],
+        "中性": [],
+        "负面": [
+          "啥时候能优化一下第三方皮肤小白条沉浸啊，好丑啊，百度，微信，Gboard那些都适配了，搜狗的就默认皮肤可以，其他不行，"
+        ]
+      }
+    },
+    "insight": "Gboard仅2次提及，但负面提及直指搜狗核心痛点：\"其他输入法都适配了底部沉浸，搜狗不行\"。与百度讯飞提及的同一问题（导航栏/底栏适配）形成交叉验证。",
+    "feature": "Gboard在皮肤舆情的提及极少（2次），但信号明确：\n\n① 底栏沉浸问题——负面提及直指搜狗第三方皮肤底栏不适配，而Gboard已解决\n② 简约设计偏好——正面提及的用户偏好简约淡彩皮肤，同时使用搜狗和Gboard\n③ 双拼用户群体——提及Gboard的用户多为双拼用户，对皮肤需求不高但对手感敏感\n④ 国际用户视角——Gboard用户多为有海外经历或技术背景的用户，对皮肤功能期望较低\n⑤ 交叉验证价值——虽提及量少，但与百度/讯飞/手心输入法共同指向底栏沉浸问题",
+    "userProfile": {
+      "gender": "男性为主（约70%），技术背景用户",
+      "age": "22-35岁，有海外经历或技术从业背景",
+      "traits": ["技术导向","极简偏好","双拼用户","隐私敏感"],
+      "interests": ["简约淡色皮肤","双拼布局优化","多语言支持","Gmail/Google生态联动"],
+      "behavior": "因Google生态使用Gboard，对皮肤几乎无需求，偶尔对比搜狗和Gboard的底栏适配效果",
+      "spendLevel": "零付费，认为皮肤功能不属于输入法核心价值"
+    },
+    "uniqueFeatures": "① Google生态深度集成：Gmail、Google Search、翻译等无缝联动，对Google生态用户有强粘性\n② 多语言支持领先：Gboard的多语言切换和输入能力远超国内输入法\n③ 底栏沉浸已适配：虽无丰富皮肤，但在基础体验（底栏沉浸、系统适配）上优于搜狗\n④ 隐私与安全标签：Google品牌背书下的隐私保护形象，对隐私敏感用户有吸引力用户有吸引力"
+  },
+  {
+    "name": "手心输入法",
+    "total": 1,
+    "positive": 0,
+    "negative": 1,
+    "neutral": 0,
+    "color": "#c084fc",
+    "icon": "心",
+    "share": "0.2%",
+    "themes": [
+      {
+        "name": "皮肤/外观对比",
+        "count": 1
+      },
+      {
+        "name": "输入体验",
+        "count": 1
+      },
+      {
+        "name": "切换/更换",
+        "count": 1
+      },
+      {
+        "name": "功能对比",
+        "count": 1
+      }
+    ],
+    "themeQuotes": {
+      "皮肤/外观对比": {
+        "正面": [],
+        "中性": [],
+        "负面": [
+          "搜狗的皮肤不能覆盖抬高键盘下面的白边，白天倒是无所谓，但是夜间键盘就很不舒服了，难受的时候下面的白边会晃得眼睛疼，但我又需要时常切换键盘。同样的，手心输入法就支持皮肤覆盖下面的白边，夜间键盘模式下，白边也会跟着变暗，就很舒服。所以希望能够改进一下。图片是两个输入法在日间模式下的对比。很明显一个覆盖了"
+        ]
+      },
+      "输入体验": {
+        "正面": [],
+        "中性": [],
+        "负面": [
+          "搜狗的皮肤不能覆盖抬高键盘下面的白边，白天倒是无所谓，但是夜间键盘就很不舒服了，难受的时候下面的白边会晃得眼睛疼，但我又需要时常切换键盘。同样的，手心输入法就支持皮肤覆盖下面的白边，夜间键盘模式下，白边也会跟着变暗，就很舒服。所以希望能够改进一下。图片是两个输入法在日间模式下的对比。很明显一个覆盖了"
+        ]
+      },
+      "切换/更换": {
+        "正面": [],
+        "中性": [],
+        "负面": [
+          "搜狗的皮肤不能覆盖抬高键盘下面的白边，白天倒是无所谓，但是夜间键盘就很不舒服了，难受的时候下面的白边会晃得眼睛疼，但我又需要时常切换键盘。同样的，手心输入法就支持皮肤覆盖下面的白边，夜间键盘模式下，白边也会跟着变暗，就很舒服。所以希望能够改进一下。图片是两个输入法在日间模式下的对比。很明显一个覆盖了"
+        ]
+      },
+      "功能对比": {
+        "正面": [],
+        "中性": [],
+        "负面": [
+          "搜狗的皮肤不能覆盖抬高键盘下面的白边，白天倒是无所谓，但是夜间键盘就很不舒服了，难受的时候下面的白边会晃得眼睛疼，但我又需要时常切换键盘。同样的，手心输入法就支持皮肤覆盖下面的白边，夜间键盘模式下，白边也会跟着变暗，就很舒服。所以希望能够改进一下。图片是两个输入法在日间模式下的对比。很明显一个覆盖了"
+        ]
+      }
+    },
+    "insight": "仅1次提及，但与Gboard、百度、讯飞共同指向同一问题：底部白条/导航栏沉浸适配。即使小众竞品也在这一点上优于搜狗，问题紧迫性高。",
+    "feature": "手心输入法仅1次提及，但该提及直击搜狗核心体验痛点：\n\n① 底部白边覆盖——手心输入法支持皮肤覆盖键盘下方的白边，夜间模式白边自动变暗\n② 夜间模式体验——搜狗夜间键盘白边刺眼，用户明确表示\"晃得眼睛疼\"，手心则无此问题\n③ 小众但精准——虽提及量极低，但问题聚焦度极高，一个用户反馈覆盖了大量沉默用户痛点\n④ 交叉验证信号——与百度、讯飞、Gboard的底栏不适配问题形成四重交叉验证\n⑤ 日间对比不明显——用户指出白天白边问题不突出，但夜间使用体验差异巨大",
+    "userProfile": {
+      "gender": "男性为主，小众输入法爱好者",
+      "age": "25-40岁，对输入法体验有深度要求的用户",
+      "traits": ["体验细节敏感","夜间使用频繁","小众产品偏好","主动反馈型"],
+      "interests": ["夜间模式优化","底栏沉浸","无广告纯净体验","自定义功能"],
+      "behavior": "在多个输入法间长期切换比较，会主动截图对比不同输入法的细节差异，是典型的高要求用户",
+      "spendLevel": "零付费，选择手心输入法本身就是对商业化输入法的回避"
+    },
+    "uniqueFeatures": "① 夜间模式底栏适配：手心输入法在夜间模式下白边自动变暗，搜狗至今未解决此问题\n② 无广告纯净体验：手心输入法以无广告、无弹窗为核心卖点，吸引对商业化反感的用户\n③ 小众但高忠诚：用户基数小但忠诚度高，口碑传播精准\n④ 问题验证价值：手心输入法的存在本身就在验证搜狗的底栏沉浸是跨竞品的共性问题品的共性问题"
+  }
+];
+
+
+// ========== TYPE COLORS ==========
+function getTypeColor(type) {
+  switch(type) {
+    case '好评': return {bg:'rgba(52,211,153,0.12)', color:'#34d399'};
+    case '吐槽': return {bg:'rgba(248,113,113,0.12)', color:'#f87171'};
+    case '问题': return {bg:'rgba(129,140,248,0.12)', color:'#818cf8'};
+    case '建议': return {bg:'rgba(251,191,36,0.12)', color:'#fbbf24'};
+    default: return {bg:'rgba(167,139,250,0.12)', color:'#a78bfa'};
+  }
+}
+
+// ========== TAB DRILL RENDER ==========
+function renderTabDrill(tabsId, contentId, data, sentimentType) {
+  const tabsEl = document.getElementById(tabsId);
+  const contentEl = document.getElementById(contentId);
+  const tabClass = 'tab-' + sentimentType;
+  const rankClass = 'r-' + sentimentType;
+  const countBg = sentimentType === 'positive' ? 'var(--positive-bg)' : sentimentType === 'negative' ? 'var(--negative-bg)' : 'var(--neutral-bg)';
+  const countColor = sentimentType === 'positive' ? 'var(--positive)' : sentimentType === 'negative' ? 'var(--negative)' : 'var(--neutral)';
+
+  // Build tabs
+  data.forEach((cat, i) => {
+    const tab = document.createElement('div');
+    tab.className = 'drill-tab ' + tabClass + (i === 0 ? ' active' : '');
+    tab.innerHTML = `${cat.name} <span class="tab-count" style="background:${countBg};color:${countColor}">${cat.count}</span>`;
+    tab.onclick = function() {
+      tabsEl.querySelectorAll('.drill-tab').forEach(t => t.classList.remove('active'));
+      contentEl.querySelectorAll('.drill-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById(contentId + '_' + i).classList.add('active');
+    };
+    tabsEl.appendChild(tab);
+  });
+
+  // Build content panels
+  data.forEach((cat, i) => {
+    const panel = document.createElement('div');
+    panel.className = 'drill-content' + (i === 0 ? ' active' : '');
+    panel.id = contentId + '_' + i;
+
+    let subsHTML = '';
+    cat.subs.forEach(sub => {
+      const tc = getTypeColor(sub.type);
+      const exHTML = sub.examples.map(ex =>
+        `<div class="example-item"><span class="ex-type ex-type-${sub.type}">${sub.type}</span>${ex}</div>`
+      ).join('');
+      subsHTML += `\n        <div class="subcat-card">\n          <div class="subcat-card-body">${exHTML}</div>\n        </div>`;
+    });
+
+    panel.innerHTML = `\n      <div class="cat-group-header" style="margin-bottom:14px;">\n        <span class="cat-group-rank ${rankClass}">${cat.rank}</span>\n        <span class="cat-group-name">${cat.name}</span>\n        <span class="cat-group-count" style="background:${countBg};color:${countColor}">${cat.count}条</span>\n      </div>\n      <div class="subcat-grid">${subsHTML}</div>\n    `;
+    contentEl.appendChild(panel);
+  });
+}
+
+// ========== COMPETITOR RENDER ==========
+function renderCompetitorKPI() {
+  const kpiEl = document.getElementById('competeKPI');
+  if (!kpiEl) return;
+  const topCompetitors = competitorData.slice(0, 4);
+  kpiEl.innerHTML = topCompetitors.map(c => {
+    const posPct = c.total > 0 ? (c.positive / c.total * 100).toFixed(0) : 0;
+    return `<div class="kpi-card" style="border-left:3px solid ${c.color};text-align:left;padding:14px 16px;">\n      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">\n        <span style="width:24px;height:24px;border-radius:6px;background:${c.color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;">${c.icon}</span>\n        <span style="font-size:13px;font-weight:600;color:var(--text);">${c.name}</span>\n      </div>\n      <div style="font-size:24px;font-weight:700;color:var(--text);line-height:1.2;">${c.total}</div>\n      <div style="font-size:11px;color:var(--text-tertiary);">提及量 · 占比${c.share}</div>\n      <div style="margin-top:8px;">\n        <div class="compete-sentiment-bar">\n          <div style="width:${c.total>0?c.positive/c.total*100:0}%;background:var(--positive);"></div>\n          <div style="width:${c.total>0?c.neutral/c.total*100:0}%;background:var(--neutral);"></div>\n          <div style="width:${c.total>0?c.negative/c.total*100:0}%;background:var(--negative);"></div>\n        </div>\n        <div style="font-size:10px;color:var(--text-tertiary);margin-top:4px;">正面${posPct}%</div>\n      </div>\n    </div>`;
+  }).join('');
+}
+
+
+// ========== COMPETITOR USER PROFILE CARD HELPER ==========
+function renderCompetitorUserProfileCard(profile, compName) {
+  const traitTags = (profile.traits || []).map(t =>
+    `<span style="display:inline-block;font-size:10px;padding:3px 10px;border-radius:12px;background:rgba(244,114,182,0.12);color:#db2777;margin:0 4px 4px 0;font-weight:500;">${t}</span>`
+  ).join('');
+  const interestTags = (profile.interests || []).map(t =>
+    `<span style="display:inline-block;font-size:10px;padding:3px 10px;border-radius:12px;background:rgba(129,140,248,0.12);color:#6366f1;margin:0 4px 4px 0;font-weight:500;">${t}</span>`
+  ).join('');
+
+  return `
+    <div style="flex:1;background:linear-gradient(135deg, rgba(244,114,182,0.06) 0%, rgba(251,146,60,0.06) 100%);border-radius:12px;border:1px solid rgba(244,114,182,0.18);padding:14px 16px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+        <span style="font-size:14px;">👥</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text);">输入法皮肤用户画像</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:11px;">
+        <div>
+          <span style="color:var(--text-tertiary);font-weight:600;">性别分布</span>
+          <div style="color:var(--text-secondary);margin-top:2px;">${profile.gender || '-'}</div>
+        </div>
+        <div>
+          <span style="color:var(--text-tertiary);font-weight:600;">年龄层</span>
+          <div style="color:var(--text-secondary);margin-top:2px;">${profile.age || '-'}</div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <span style="color:var(--text-tertiary);font-weight:600;">用户特质</span>
+          <div style="margin-top:4px;">${traitTags}</div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <span style="color:var(--text-tertiary);font-weight:600;">偏好方向</span>
+          <div style="margin-top:4px;">${interestTags}</div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <span style="color:var(--text-tertiary);font-weight:600;">行为模式</span>
+          <div style="color:var(--text-secondary);line-height:1.6;margin-top:2px;">${profile.behavior || '-'}</div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <span style="color:var(--text-tertiary);font-weight:600;">付费倾向</span>
+          <div style="color:var(--text-secondary);line-height:1.6;margin-top:2px;">${profile.spendLevel || '-'}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCompetitorTabs() {
+  const tabsEl = document.getElementById('competeTabs');
+  const contentEl = document.getElementById('competeContent');
+  if (!tabsEl || !contentEl) return;
+
+  competitorData.forEach((comp, i) => {
+    // Tab
+    const tab = document.createElement('div');
+    tab.className = 'drill-tab' + (i === 0 ? ' active' : '');
+    tab.innerHTML = `<span style="display:inline-flex;width:18px;height:18px;border-radius:5px;background:${comp.color};color:#fff;font-size:9px;font-weight:700;align-items:center;justify-content:center;margin-right:4px;vertical-align:middle;">${comp.icon}</span>${comp.name} <span class="tab-count" style="background:var(--accent-light);color:var(--accent);">${comp.total}</span>`;
+    tab.onclick = function() {
+      tabsEl.querySelectorAll('.drill-tab').forEach(t => t.classList.remove('active'));
+      contentEl.querySelectorAll('.drill-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('competePanel_' + i).classList.add('active');
+    };
+    tabsEl.appendChild(tab);
+
+    // Content Panel
+    const panel = document.createElement('div');
+    panel.className = 'drill-content' + (i === 0 ? ' active' : '');
+    panel.id = 'competePanel_' + i;
+
+    const posPct = comp.total > 0 ? (comp.positive / comp.total * 100).toFixed(1) : '0.0';
+    const negPct = comp.total > 0 ? (comp.negative / comp.total * 100).toFixed(1) : '0.0';
+    const neuPct = comp.total > 0 ? (comp.neutral / comp.total * 100).toFixed(1) : '0.0';
+
+    let html = `
+      <div style="padding:20px;">
+        <!-- 竞品头部：名称 + 情感数据条 -->
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="display:inline-flex;width:28px;height:28px;border-radius:8px;background:${comp.color};color:#fff;font-size:12px;font-weight:700;align-items:center;justify-content:center;">${comp.icon}</span>
+          <div style="font-size:18px;font-weight:700;color:var(--text);">${comp.name}</div>
+          <span style="font-size:12px;color:var(--text-tertiary);">提及 ${comp.total} 条 · 占比${comp.share}</span>
+          <div style="flex:1;"></div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:11px;">
+            <span><span style="color:var(--positive);font-weight:700;">${comp.positive}</span> <span style="color:var(--text-tertiary);">正面</span></span>
+            <span><span style="color:var(--neutral);font-weight:700;">${comp.neutral}</span> <span style="color:var(--text-tertiary);">中性</span></span>
+            <span><span style="color:var(--negative);font-weight:700;">${comp.negative}</span> <span style="color:var(--text-tertiary);">负面</span></span>
+          </div>
+        </div>
+        <div class="compete-sentiment-bar" style="height:8px;border-radius:4px;margin-bottom:16px;">
+          <div style="width:${comp.total>0?comp.positive/comp.total*100:0}%;background:var(--positive);border-radius:4px 0 0 4px;"></div>
+          <div style="width:${comp.total>0?comp.neutral/comp.total*100:0}%;background:var(--neutral);"></div>
+          <div style="width:${comp.total>0?comp.negative/comp.total*100:0}%;background:var(--negative);border-radius:0 4px 4px 0;"></div>
+        </div>
+        <!-- 舆情特征 + 用户画像 并排 -->
+        <div style="display:flex;gap:14px;margin-bottom:20px;">
+          <div style="flex:1;background:linear-gradient(135deg, rgba(129,140,248,0.08) 0%, rgba(167,139,250,0.08) 100%);border-radius:12px;border:1px solid rgba(129,140,248,0.2);padding:14px 16px;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+              <span style="font-size:14px;">📊</span>
+              <span style="font-size:12px;font-weight:700;color:var(--text);">竞品舆情特征</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;white-space:pre-wrap;">${comp.feature || '暂无数据'}</div>
+          </div>
+          ${comp.userProfile ? renderCompetitorUserProfileCard(comp.userProfile, comp.name) : ''}
+        </div>
+        <!-- 独家特色及差异点 -->
+        ${comp.uniqueFeatures ? `
+        <div style="background:linear-gradient(135deg, rgba(16,185,129,0.06) 0%, rgba(52,211,153,0.06) 100%);border-radius:12px;border:1px solid rgba(16,185,129,0.2);padding:14px 16px;margin-bottom:20px;">
+          <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+            <span style="font-size:14px;">⭐</span>
+            <span style="font-size:12px;font-weight:700;color:var(--text);">平台独家特色及差异点</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;white-space:pre-wrap;">${comp.uniqueFeatures}</div>
+        </div>
+        ` : ''}
+
+        <!-- 竞争洞察 -->
+        ${comp.insight ? `
+        <div class="compete-insight" style="margin-bottom:20px;">
+          <div class="compete-insight-title">💡 竞争洞察</div>
+          <div class="compete-insight-text">${comp.insight}</div>
+        </div>
+        ` : ''}
+    `;
+
+    // Theme-specific quotes — all visible in dual-column grid
+    if (comp.themeQuotes) {
+      const themeCards = [];
+      comp.themes.forEach(t => {
+        const tq = comp.themeQuotes[t.name];
+        if (!tq) return;
+        const hasAny = (tq['正面'] && tq['正面'].length) || (tq['中性'] && tq['中性'].length) || (tq['负面'] && tq['负面'].length);
+        if (!hasAny) return;
+
+        let quotesHTML = '';
+        const sentimentOrder = [
+          {key:'负面', label:'负面', bgVar:'var(--negative-bg)', colorVar:'var(--negative)'},
+          {key:'中性', label:'中性', bgVar:'var(--neutral-bg)', colorVar:'var(--neutral)'},
+          {key:'正面', label:'正面', bgVar:'var(--positive-bg)', colorVar:'var(--positive)'}
+        ];
+        sentimentOrder.forEach(s => {
+          const quotes = tq[s.key];
+          if (quotes && quotes.length > 0) {
+            quotes.forEach(q => {
+              const truncated = q.length > 130 ? q.substring(0, 130) + '…' : q;
+              quotesHTML += `<div class="example-item"><span class="ex-type" style="background:${s.bgVar};color:${s.colorVar};">${s.label}</span>${truncated}</div>`;
+            });
+          }
+        });
+
+        const tc = getTypeColor('中性');
+        themeCards.push(`
+          <div class="subcat-card">
+            <div class="subcat-card-head">
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="width:6px;height:6px;border-radius:50%;background:${comp.color};"></span>
+                <span class="subcat-card-name">${t.name}</span>
+              </div>
+              <span class="subcat-card-count" style="background:${tc.bg};color:${tc.color}">${t.count}条</span>
+            </div>
+            <div class="subcat-card-body">${quotesHTML}</div>
+          </div>
+        `);
+      });
+
+      if (themeCards.length > 0) {
+        html += `<div class="subcat-grid">${themeCards.join('')}</div>`;
+      }
+    }
+
+    html += `</div>`;
+    panel.innerHTML = html;
+    contentEl.appendChild(panel);
+  });
+}
+
+
+const channelCompetitorData = [
+  {
+    channel: "小红书",
+    total: 378,
+    sentiment: { positive: 321, negative: 18, neutral: 39 },
+    feature: "种草分享型平台，竞品提及以跨平台皮肤互通、外观对比为主。整体情感偏正面，多为安利/分享语境。\n\n具体表现为：\n\n① 大量「百度皮转搜狗皮」求助帖，用户因百度皮肤生态丰富而犹豫是否切换\n② 跨平台皮肤互通需求强烈，用户希望搜狗能兼容百度/讯飞的皮肤格式\n③ 对二十六键布局差异敏感，百度和搜狗在键位排列上的细微差别影响用户迁移意愿\n④ 人物切割技术对比频繁，百度的人物抠图精度成为搜狗被比较的焦点\n⑤ 底部白边/沉浸适配问题在小红书被多次提及，用户通过截图直观展示不同输入法在全面屏上的视觉差异",
+    userProfile: {
+      gender: "女性为主（约75%），Z世代占比高",
+      age: "18-28岁为核心人群，大学生及初入职场女性居多",
+      traits: ["颜值驱动型消费者","种草敏感、跟风安利","饭圈/二次元/萌系偏好","碎片化浏览，决策链短"],
+      interests: ["可爱萌系皮肤","明星/CP应援皮肤","季节/节日限定","手账/贴纸美学"],
+      behavior: "以图文笔记为主要表达形式，习惯用截图+安利文分享皮肤，评论区互动活跃，对'免费''联名''限定'等关键词敏感，容易被高赞笔记种草",
+      spendLevel: "免费偏好为主，但愿意为高颜值联名/限定皮肤付费（通常单次≤6元）"
+    },
+    highlights: [
+      {
+        category: "皮肤颜值与可爱度种草",
+        count: 89,
+        description: "小红书是搜狗皮肤种草主阵地，用户大量分享高颜值、可爱风格的皮肤截图，形成自来水传播。'超可爱''少女心''萌'是高频关键词。",
+        quotes: [
+          { text: "我宣布这是搜狗里面最可爱的皮肤之一", sentiment: "正面" },
+          { text: "那个输入法皮肤好萌呀 我好喜欢嘿嘿", sentiment: "正面" },
+          { text: "♡分享一个超萌的猫猫输入法皮肤~ 超可爱的恶魔猫猫！搜狗新出的主题！主打一个萌~粉粉的很少女心！", sentiment: "正面" }
+        ]
+      },
+      {
+        category: "免费皮肤好评",
+        count: 56,
+        description: "用户对搜狗免费皮肤满意度高，认为性价比突出。喜羊羊联动、节日限定等免费皮肤获得大量好评。",
+        quotes: [
+          { text: "喜羊羊与灰太狼联动搜狗输入法，专属联动皮肤免费启用，全员可爱猫化萌到犯规", sentiment: "正面" },
+          { text: "给老婆们安利一个搜狗输入法的免费的键盘皮肤，我感觉好美萌", sentiment: "正面" },
+          { text: "搜狗免费皮肤是性价比最高的装扮", sentiment: "正面" }
+        ]
+      },
+      {
+        category: "皮肤推荐与安利",
+        count: 72,
+        description: "用户主动推荐搜狗皮肤给好友，形成口碑裂变。推荐语多为'推荐XX皮肤给你啦'的标准化分享句式。",
+        quotes: [
+          { text: "推荐「雨瑾」皮肤给你啦！「雨瑾」皮肤好漂亮哦赶紧来搜狗输入法围观吧！", sentiment: "正面" },
+          { text: "【推荐「黄星皮肤」皮肤给你啦！】「黄星皮肤」皮肤好漂亮哦赶紧来搜狗输入法围观吧！", sentiment: "正面" },
+          { text: "推荐「雨瑾2」皮肤给你啦！「雨瑾2」皮肤好漂亮哦赶紧来搜狗输入法围观吧！", sentiment: "正面" }
+        ]
+      },
+      {
+        category: "付费皮肤值得购买",
+        count: 34,
+        description: "部分用户认为搜狗付费皮肤物有所值，愿意为颜值和体验买单，形成'情绪价值'消费认知。",
+        quotes: [
+          { text: "上班赚的钱有一些都花给了搜狗输入法买皮肤给自己上班打字提供点情绪价值了", sentiment: "正面" },
+          { text: "又买了两个搜狗皮肤", sentiment: "正面" },
+          { text: "最近也太爱自己了吧，毫不犹豫全款拿下八元搜狗输入法皮肤", sentiment: "正面" }
+        ]
+      }
+    ],
+    suggestions: [
+      {
+        category: "希望增加更多皮肤",
+        count: 48,
+        description: "用户希望搜狗皮肤更新速度加快、款式更丰富，尤其希望追赶百度的皮肤数量和设计多样性。",
+        quotes: [
+          { text: "皮肤没有多样性", sentiment: "中性" },
+          { text: "能不能像百度一样出点好看的皮肤", sentiment: "中性" },
+          { text: "搜狗输入法皮肤怎么更新的那么慢", sentiment: "中性" }
+        ]
+      },
+      {
+        category: "希望支持第三方皮肤导入",
+        count: 22,
+        description: "用户希望搜狗支持更灵活的第三方皮肤导入方式，目前仅支持套壳导入，操作门槛高。",
+        quotes: [
+          { text: "请问手机怎么导入皮肤", sentiment: "中性" },
+          { text: "怎么从第三方导入皮肤", sentiment: "中性" },
+          { text: "uos导入皮肤需要什么格式的文件", sentiment: "中性" }
+        ]
+      },
+      {
+        category: "跨平台皮肤互通需求",
+        count: 35,
+        description: "用户希望搜狗和百度皮肤能互通转换，或搜狗能上架类似百度的热门皮肤，减少平台切换成本。",
+        quotes: [
+          { text: "搜狗输入法有没有类似百度浅云这种皮肤的？习惯问题，感觉还是搜狗更好用", sentiment: "中性" },
+          { text: "哪位宝宝会百度皮转搜狗皮啊，很喜欢百度皮的这款皮肤，可是搜狗没有", sentiment: "中性" }
+        ]
+      }
+    ],
+    issues: [
+      {
+        category: "底部导航栏沉浸/智能刷色",
+        severity: "high",
+        count: 45,
+        description: "用户反复吐槽搜狗无法做到底部导航栏与皮肤颜色融合，百度、讯飞、微信输入法、甚至vivo自带输入法均已支持。夜间模式下白条刺眼，严重影响皮肤体验。",
+        quotes: [
+          { text: "三大输入法只有你还没有智能刷色，连微信输入法和vivo自带的都有，你自己看看下面突不突兀。。大晚上那个白条越看越难受", sentiment: "负面" },
+          { text: "搜狗的其他皮肤都没办法做到底部栏沉浸，打字震动上我总觉得微信输入法震动怪怪的", sentiment: "负面" },
+          { text: "搜狗啥时候能解决人物切割问题就好了，像百度那样，现在的人物切割毁了好多好萌的皮肤", sentiment: "负面" }
+        ]
+      },
+      {
+        category: "二十六键布局限制",
+        severity: "high",
+        count: 32,
+        description: "搜狗二十六键皮肤只能做成独立小格子，而百度、讯飞官方皮肤支持按键连在一起的整体设计，立绘皮效果差距明显。",
+        quotes: [
+          { text: "搜狗二十六键只能做成一个个的小格子，但是讯飞百度的官皮二十六键都可以随便连在一起，真的羡慕，希望搜狗加加油攻克这个问题", sentiment: "中性" },
+          { text: "搜狗最近开始做立绘皮了，看看九键和二十六键的区别有多大！我知道不能赖作者", sentiment: "中性" }
+        ]
+      },
+      {
+        category: "皮肤跨平台互通/转换",
+        severity: "medium",
+        count: 68,
+        description: "大量用户希望百度皮肤能转到搜狗使用，或询问搜狗是否有类似百度的某款皮肤。跨平台皮肤生态壁垒造成用户流失风险。",
+        quotes: [
+          { text: "搜狗输入法有没有类似百度浅云这种皮肤的？习惯问题，感觉还是搜狗更好用，我当初是看到这个皮肤好好看，然后换的百度输入法", sentiment: "中性" },
+          { text: "安卓手机原来搜狗输入法的光效不会立马不见，那我买了那么多百度皮肤算什么", sentiment: "负面" }
+        ]
+      },
+      {
+        category: "皮肤价格与付费体验",
+        severity: "medium",
+        count: 24,
+        description: "部分用户认为搜狗皮肤定价偏高，免费皮肤选择少。与百度、讯飞相比，付费皮肤的性价比感知不足。",
+        quotes: [
+          { text: "搜狗皮肤怎么这么贵？好不容易找到一款免费的", sentiment: "负面" },
+          { text: "我可以接受你卖，你也可以卖的稍微贵一点，但是不好看！！！！！！", sentiment: "负面" }
+        ]
+      },
+      {
+        category: "动效/光效体验差异",
+        severity: "low",
+        count: 18,
+        description: "安卓端搜狗皮肤光效不会立即消失（与百度不同），部分用户不适应。另有用户希望动效可自定义开关。",
+        quotes: [
+          { text: "我希望有动效的皮肤，可以由用户自行决定要不要动效呈现，讯飞输入法就是可以自己设置要不要动效显示的", sentiment: "中性" }
+        ]
+      }
+    ]
+  },
+  {
+    channel: "新浪微博",
+    total: 149,
+    sentiment: { positive: 114, negative: 8, neutral: 27 },
+    feature: "饭圈应援主阵地，竞品提及以明星/IP联名皮肤的跨平台分发为核心。整体情感偏正面，以应援分享为主。\n\n具体表现为：\n\n① 后援会统一制作「百度+搜狗」双平台应援皮肤，确保粉丝无论使用哪款输入法都能获得一致视觉体验\n② 明星生日/出道日/演唱会等节点触发大量皮肤制作需求，用户主动对比各平台皮肤分发效率\n③ CP向皮肤在饭圈内部传播，用户会对比百度和搜狗的CP皮肤质量与数量\n④ 部分粉丝因搜狗缺少特定明星皮肤而转向百度，形成明确的流失链路\n⑤ 饭圈用户对皮肤的细节要求极高（配色准确度、应援色还原、Q版形象精度），常通过截图对比各平台成品质量",
+    userProfile: {
+      gender: "女性为主（约70%），粉丝群体特征鲜明",
+      age: "16-25岁为核心，学生群体占比高，追星族密集",
+      traits: ["饭圈文化深度参与者","应援消费意愿强","跨平台内容搬运者","超话/话题驱动型用户"],
+      interests: ["爱豆应援皮肤","CP向/同人创作皮肤","生日/出道日限定","后援会官方皮肤"],
+      behavior: "以超话为核心组织形式，后援会统一制作分发应援皮肤，用户主动求下载链接，评论转发是主要互动方式，对'独家''限定''周年'高度敏感",
+      spendLevel: "应援消费意愿强，愿意为爱豆联名皮肤付费（单次6-12元常见），但免费分发仍是主流"
+    },
+    highlights: [
+      {
+        category: "饭圈应援皮肤制作与分发",
+        count: 86,
+        description: "微博是饭圈定制皮肤的核心分发平台，粉丝后援会为爱豆制作专属输入法皮肤并在微博发布下载链接，形成应援文化的一部分。",
+        quotes: [
+          { text: "设计了一套开推超燃宁的电脑壁纸手机搜狗/百度输入法皮肤", sentiment: "正面" },
+          { text: "橹穆LuMu520定制键盘套装上线，定制输入法皮肤，梦幻蓝粉应援色系键盘+橹穆Q版形象", sentiment: "正面" },
+          { text: "彰冬酱520快乐！制作了wl2输入法皮肤可以plq自取", sentiment: "正面" }
+        ]
+      },
+      {
+        category: "明星/IP联名皮肤上线",
+        count: 42,
+        description: "微博用户积极传播搜狗与明星、综艺、IP的联名皮肤上线的消息，形成官方宣发之外的二次传播。",
+        quotes: [
+          { text: "终于和我最常用的输入法联名了！", sentiment: "正面" },
+          { text: "搜狗丨晚安小羊🐏我做搜狗啦！搜狗皮丨晚安小羊丨哇哦主题 双色丨冒头动效", sentiment: "正面" },
+          { text: "两个皮肤二选一 喜欢辰光的动效", sentiment: "正面" }
+        ]
+      }
+    ],
+    suggestions: [
+      {
+        category: "百度皮转搜狗皮需求",
+        count: 38,
+        description: "微博用户频繁询问如何将百度皮肤转换到搜狗使用，或求搜狗版本的同款皮肤，反映跨平台皮肤生态壁垒。",
+        quotes: [
+          { text: "哪位宝宝会百度皮转搜狗皮啊，很喜欢百度皮的这款皮肤，可是搜狗没有", sentiment: "中性" },
+          { text: "我才发现百度输入法皮肤比搜狗多", sentiment: "中性" },
+          { text: "原创二传美化 哪位大佬会百度转搜狗，好想用这个搜狗皮肤", sentiment: "中性" }
+        ]
+      },
+      {
+        category: "输入法切换与适配讨论",
+        count: 28,
+        description: "用户在不同输入法间切换时，对布局习惯和皮肤适配性有讨论。部分用户因特定功能或皮肤效果更换输入法。",
+        quotes: [
+          { text: "特意为了洛克王国的皮肤下回来了搜狗输入法，不过布局因为用惯了讯飞还是不习惯", sentiment: "中性" },
+          { text: "终于有讯飞了 这个搜狗啥皮肤都要💰用的好不得劲", sentiment: "负面" }
+        ]
+      }
+    ],
+    issues: [
+      {
+        category: "饭圈皮肤跨平台分发",
+        severity: "medium",
+        count: 86,
+        description: "明星生日应援、综艺联名等场景下，粉丝团需同时为百度和搜狗制作皮肤。部分皮肤仅支持单一平台，引发粉丝求转换教程。",
+        quotes: [
+          { text: "设计了一套开推超燃宁的电脑壁纸手机搜狗/百度输入法皮肤", sentiment: "正面" },
+          { text: "哪位宝宝会百度皮转搜狗皮啊，很喜欢百度皮的这款皮肤，可是搜狗没有", sentiment: "中性" },
+          { text: "我才发现百度输入法皮肤比搜狗多", sentiment: "中性" }
+        ]
+      },
+      {
+        category: "皮肤质量与价格争议",
+        severity: "medium",
+        count: 22,
+        description: "微博用户对搜狗皮肤的设计质量和定价有明确负面反馈，认为部分付费皮肤不值定价。",
+        quotes: [
+          { text: "搜狗某些三元皮肤丑的要是上在百度输入法一块钱都没人买", sentiment: "负面" },
+          { text: "搜狗还我买的皮肤钱", sentiment: "负面" }
+        ]
+      },
+      {
+        category: "输入法切换与适配",
+        severity: "low",
+        count: 28,
+        description: "用户在不同输入法间切换时，对布局习惯和皮肤适配性有讨论。部分用户因特定功能或皮肤效果更换输入法。",
+        quotes: [
+          { text: "特意为了洛克王国的皮肤下回来了搜狗输入法，不过布局因为用惯了讯飞还是不习惯", sentiment: "中性" },
+          { text: "终于有讯飞了 这个搜狗啥皮肤都要💰用的好不得劲", sentiment: "负面" }
+        ]
+      }
+    ]
+  },
+  {
+    channel: "其他/未标注",
+    total: 38,
+    sentiment: { positive: 3, negative: 16, neutral: 19 },
+    feature: "负面舆情集中渠道。用户在此反馈具体产品缺陷，竞品提及多伴随明确的功能对比和流失意向，需优先响应。\n\n具体表现为：\n\n① 底部白边/沉浸适配是最突出的抱怨点，用户直接对比百度、微信、Gboard、手心输入法的适配效果，指出搜狗第三方皮肤无法覆盖键盘底部白边\n② 皮肤更新速度慢、设计质量下滑被频繁提及，用户认为百度皮肤更新更勤快、设计更精美，部分用户因此明确表达转投百度的意向\n③ 导航栏颜色与皮肤融色功能缺失，用户指出百度和讯飞已支持此功能，搜狗「买了皮肤不融色，白买了」\n④ 动效自定义与广告体验问题，用户希望像讯飞一样可自定义动效开关，并抱怨搜狗设置跳转时插广告\n⑤ 定制版搜狗输入法与普通版皮肤不同步，形成体验孤岛，用户反馈「定制版无法接受普通版的皮肤」",
+    userProfile: {
+      gender: "男性比例相对较高（约55%），技术敏感型用户偏多",
+      age: "25-35岁为主，有一定使用经验的成熟用户",
+      traits: ["功能导向型用户","技术细节敏感","竞品迁移意愿强","理性对比决策者"],
+      interests: ["沉浸适配/无白边","自定义/DIY自由度","第三方皮肤导入","功能稳定性与兼容性"],
+      behavior: "以应用商店评论、论坛帖子为主要反馈形式，描述问题详细具体，常附带竞品截图对比，流失意向表达直接（'换百度了''卸载了'）",
+      spendLevel: "付费意愿中等，更看重功能完善而非外观，认为'基础功能都不完善就不该收费'"
+    },
+    highlights: [
+      {
+        category: "皮肤功能认可",
+        count: 3,
+        description: "少量用户在其他渠道对搜狗皮肤功能表示认可，数量较少但存在正面声音。",
+        quotes: [
+          { text: "搜狗输入法皮肤还是挺好看的", sentiment: "正面" }
+        ]
+      }
+    ],
+    suggestions: [
+      {
+        category: "功能改进建议",
+        count: 12,
+        description: "用户提出具体的功能改进建议，包括动效自定义、导航栏融色、减少广告干扰等。",
+        quotes: [
+          { text: "我希望有动效的皮肤，可以由用户自行决定要不要动效呈现", sentiment: "中性" },
+          { text: "人家的皮肤虽然不可以试用，但不会在跳转设置的时候跳广告", sentiment: "中性" }
+        ]
+      },
+      {
+        category: "皮肤更新与质量期待",
+        count: 7,
+        description: "用户希望搜狗加快皮肤更新速度、提升设计质量，追赶竞品水平。",
+        quotes: [
+          { text: "搜狗输入法皮肤怎么更新的那么慢能不能好看的像百度输入法一样出点好看的皮肤呢", sentiment: "中性" }
+        ]
+      }
+    ],
+    issues: [
+      {
+        category: "底部白边/沉浸适配",
+        severity: "high",
+        count: 18,
+        description: "最突出的产品缺陷。第三方皮肤无法覆盖键盘底部白边，百度、微信、Gboard、手心输入法均已适配。夜间模式下白边刺眼，严重影响体验。",
+        quotes: [
+          { text: "能不能融合一下底栏，不管用什么皮肤都有一条白边，特别丑，隔壁百度都可以", sentiment: "负面" },
+          { text: "啥时候能优化一下第三方皮肤小白条沉浸啊，好丑啊，百度，微信，Gboard那些都适配了，搜狗的就默认皮肤可以", sentiment: "负面" },
+          { text: "搜狗的皮肤不能覆盖抬高键盘下面的白边，夜间键盘就很不舒服了，手心输入法就支持皮肤覆盖下面的白边", sentiment: "负面" }
+        ]
+      },
+      {
+        category: "皮肤更新慢/质量下滑",
+        severity: "high",
+        count: 14,
+        description: "用户明确抱怨搜狗皮肤更新速度慢、设计质量不如百度。部分用户因此考虑转投竞品。",
+        quotes: [
+          { text: "搜狗输入法皮肤怎么更新的那么慢能不能好看的像百度输入法一样出点好看的皮肤呢", sentiment: "中性" },
+          { text: "皮肤越来越不好看，你学学人家百度啊！！！！！！你不让人家私人弄，那你自己倒是弄的好看啊", sentiment: "负面" },
+          { text: "神经病吗为什么自己的ssf皮肤包用不了啊，狗屎，去百度输入法了拜拜", sentiment: "负面" }
+        ]
+      },
+      {
+        category: "导航栏颜色与皮肤融色",
+        severity: "medium",
+        count: 8,
+        description: "用户希望导航栏位置颜色能与皮肤颜色自动融合，百度和讯飞已支持此功能。",
+        quotes: [
+          { text: "什么时候能让导航栏位置颜色与皮肤融色啊？百度讯飞都可以，就你搜狗还没有！买了皮肤不融色，白买了！！！", sentiment: "负面" }
+        ]
+      },
+      {
+        category: "动效自定义与广告体验",
+        severity: "low",
+        count: 6,
+        description: "用户希望动效可自定义开关，并减少设置跳转时的广告干扰。",
+        quotes: [
+          { text: "人家的皮肤虽然不可以试用，但不会在跳转设置的时候跳广告", sentiment: "中性" },
+          { text: "我希望有动效的皮肤，可以由用户自行决定要不要动效呈现", sentiment: "中性" }
+        ]
+      }
+    ]
+  },
+];
+
+// ========== CUSTOM SKIN DATA (皮肤定制维度) ==========
+const customSkinData = {
+  overview: {
+    total: 1387,
+    negative: 692,
+    positive: 571,
+    neutral: 124,
+    description: "皮肤定制是用户高频需求维度，涵盖皮肤制造机（AI自制）、手动DIY创作、饭圈应援定制、自定义皮肤上传与分享等场景。负面集中在上传失败、缩略图变形、创作记录无法删除等工具缺陷；正面以创作大赛、饭圈应援皮肤为主；中性以功能建议为主，如希望二次编辑、上架商城等。"
+  },
+  categories: [
+    {
+      id: "maker_issues",
+      name: "🔧 皮肤制造机问题",
+      count: 535,
+      sentiment: "negative",
+      severity: "high",
+      description: "皮肤制造机（AI自制皮肤工具）是定制维度最核心的负面来源。综合问题208条、上传失败58条、缩略图变形49条，用户对强制AI介入、创作自由度不足、技术故障均有强烈不满。",
+      subs: [
+        { name: "综合问题", count: 208, examples: ["我想参与设计键盘皮肤来产生收益","套壳后的搜狗皮肤没有状态栏是什么原因","我做皮肤还要经过你这个AI？"] },
+        { name: "上传失败", count: 58, examples: ["上传不了自己做的皮肤","自定义皮肤创建失败","为什么新安装的搜狗输入法没法自定义皮肤"] },
+        { name: "缩略图变形/显示不全", count: 49, examples: ["皮肤做出来扁扁的好像被压缩了","自定义皮肤的时候老压扁图片","皮肤发送键被拉伸了和主题图片效果不符"] },
+        { name: "其他建议", count: 73, examples: ["制作皮肤的时候贴纸能不能自定义","一键AI制作皮肤不好用还是以前自己可以制作的好","制作的皮肤上传成功如何再修皮肤名字"] },
+      ]
+    },
+    {
+      id: "maker_suggestions",
+      name: "💡 皮肤制造机建议",
+      count: 202,
+      sentiment: "neutral",
+      severity: "medium",
+      description: "用户对皮肤制造机提出大量改进建议，集中在删除AI创作记录（38条）、支持二次编辑（14条）、上架商城让别人搜到（14条）等方向，反映工具的闭环体验不足。",
+      subs: [
+        { name: "希望删除AI创作记录", count: 38, examples: ["不能删除我的创作记录AI皮肤","皮肤制造机-ai皮肤记录能删除吗？点击进入后还一直给我ai生成皮肤","AI皮肤创作记录里大量生成失败的记录无法删除请求后台强制清空"] },
+        { name: "希望支持二次编辑", count: 14, examples: ["建议自定义皮肤可以进行二次修改导出来贴纸位置就移动了还不能修改真的很痛苦","自定义皮肤怎么样才能使用原图不想要AI制作皮肤","皮肤换自己照片不要AI制作"] },
+        { name: "希望上架商城让别人搜到", count: 14, examples: ["商城无法搜索皮肤","我上传了皮肤为什么别人搜不到我的名字","怎样将制造的皮肤上架商城？"] },
+        { name: "其他建议", count: 134, examples: ["制作皮肤的时候那个贴纸能不能自定义","我想保存我的皮肤但是原图我没有了现在想用新皮肤又怕旧的没了","一键AI制作皮肤不好用还是以前自己可以制作的好"] },
+      ]
+    },
+    {
+      id: "maker_positive",
+      name: "👍 皮肤制造机好评",
+      count: 100,
+      sentiment: "positive",
+      severity: "low",
+      description: "皮肤制造机的正面反馈主要来自创作大赛/投票活动（81条），其次是功能好评（18条），自制皮肤分享仅1条。说明活动运营有效，但工具本身的口碑仍待提升。",
+      subs: [
+        { name: "创作大赛/投票", count: 81, examples: ["第二节搜狗皮肤大赛皮肤可以用啦～","搜狗皮肤大赛前十","终于和我最常用的输入法联名了！"] },
+        { name: "皮肤制造机功能好评", count: 18, examples: ["我今天发现搜狗输入法可以自己定制键盘皮肤可以放自己喜欢的图去玩这个","小熊甜梦手残党也能DIY专属键盘皮肤 用搜狗的AI皮肤制作5分钟就DIY出这套","搜狗输入法也可以AI皮肤啦~是萌萌的🐶我自己DIY的输入法皮肤"] },
+        { name: "自制皮肤分享", count: 1, examples: ["我制作了：【推荐「打雪仗吗」皮肤给你啦！】「打雪仗吗」皮肤好漂亮哦赶紧来搜狗输入法围观吧！"] },
+      ]
+    },
+    {
+      id: "fan_custom",
+      name: "🌟 饭圈定制/应援皮肤",
+      count: 456,
+      sentiment: "positive",
+      severity: "low",
+      description: "饭圈定制/应援皮肤是定制维度最大的正面来源（456条），粉丝后援会为爱豆定制专属键盘皮肤，形成社交传播。微博是主阵地，小红书也有大量分享。搜狗是饭圈皮肤主要平台之一。",
+      subs: [
+        { name: "饭圈定制/应援皮肤", count: 456, examples: ["橹穆LuMu520定制键盘套装上线，定制输入法皮肤，梦幻蓝粉应援色系键盘+橹穆Q版形象","彰冬酱520快乐！制作了wl2输入法皮肤可以plq自取","设计了一套开推超燃宁的电脑壁纸 手机搜狗/百度输入法皮肤"] },
+      ]
+    },
+    {
+      id: "diy_share",
+      name: "🎨 自制/创作皮肤分享",
+      count: 96,
+      sentiment: "positive",
+      severity: "low",
+      description: "用户自发制作皮肤并分享是定制生态的健康指标（96条），但相比百度输入法的第三方皮肤生态，搜狗的创作者生态仍显薄弱——用户多次表达'百度皮转搜狗皮'需求。",
+      subs: [
+        { name: "自制/创作皮肤分享", count: 96, examples: ["自制的搜狗皮肤自动轮换皮组合特别版 返场一下之前做的水果集魔盒组合皮","做了一个搜狗键盘皮肤？背景是之前约的一个糕糕 我发现这个居然还能分享","用以前的图做了一个简易的搜狗输入法皮肤"] },
+      ]
+    },
+    {
+      id: "custom_skin_lost",
+      name: "📦 自定义皮肤丢失",
+      count: 77,
+      sentiment: "negative",
+      severity: "high",
+      description: "自定义皮肤丢失是定制维度的严重体验问题（77条），换手机/换号后自制皮肤全部消失，与已购皮肤丢失形成叠加伤害。定制皮肤的资产属性尚未被产品正视。",
+      subs: [
+        { name: "自定义皮肤丢失", count: 77, examples: ["重新下载搜狗之前制作的皮肤找不到了","我登上去我制作的皮肤都没了"] },
+      ]
+    },
+    {
+      id: "custom_incompatible",
+      name: "⚠️ 定制版不兼容",
+      count: 32,
+      sentiment: "negative",
+      severity: "medium",
+      description: "定制版搜狗输入法（手机厂商定制版）与普通版皮肤不同步，定制版无法使用普通版已购/自制皮肤，形成体验孤岛。",
+      subs: [
+        { name: "定制版不兼容", count: 32, examples: ["定制版搜狗输入法和搜狗输入法皮肤不同步","定制版无法接受普通版的皮肤"] },
+      ]
+    },
+    {
+      id: "cant_use_maker",
+      name: "🤷 不会用皮肤制造机",
+      count: 8,
+      sentiment: "negative",
+      severity: "medium",
+      description: "部分用户不知道如何跳过AI直接使用自己的图片制作皮肤，'不会用皮肤制造机'反映工具入口和引导不够清晰。",
+      subs: [
+        { name: "不会用皮肤制造机", count: 8, examples: ["只想放自己喜欢的图片不想ai怎么搞","现在都不能自己制作皮肤了我不需要这个"] },
+      ]
+    },
+    {
+      id: "thirdparty_import",
+      name: "🔌 希望导入第三方皮肤",
+      count: 45,
+      sentiment: "neutral",
+      severity: "medium",
+      description: "用户希望导入第三方皮肤（45条），百度输入法的第三方皮肤生态远比搜狗成熟。大量'百度皮转搜狗皮'需求印证竞品定制生态的吸引力。搜狗仅支持套壳导入，不支持ssf等原生格式。",
+      subs: [
+        { name: "希望导入第三方皮肤", count: 45, examples: ["请问手机怎么导入皮肤","怎么从第三方导入皮肤","uos导入皮肤需要什么格式的文件"] },
+      ]
+    },
+    {
+      id: "compete_diy",
+      name: "⚔️ 竞品DIY/定制对比",
+      count: 188,
+      sentiment: "mixed",
+      severity: "high",
+      description: "竞品在DIY/定制维度形成直接威胁：百度DIY/定制134次提及、讯飞48次、苹果5次、Gboard 1次。百度的人物切割技术、第三方皮肤生态、皮肤数量均为优势。用户高频表达'百度皮转搜狗皮'需求。",
+      subs: [
+        { name: "百度 DIY/定制", count: 134, examples: ["哪位宝宝会百度皮转搜狗皮啊，很喜欢百度皮的这款皮肤，可是搜狗没有","原创二传美化 分享端沐小伶籽老师的新作：百度转搜狗的醇香蜜语","好烦呐，最近搜狗的皮肤都没有百度的好看！而且百度有好多第三方的那个皮肤好好看呀！"] },
+        { name: "讯飞 DIY/定制", count: 48, examples: ["讯飞输入法可以自己设置要不要动效显示的","讯飞的适配性要比搜狗更好"] },
+        { name: "其他竞品", count: 6, examples: ["Gboard也支持自定义皮肤了","苹果输入法虽然不能换皮但简洁好用"] },
+      ]
+    },
+  ],
+  insight: "皮肤定制是搜狗输入法最具差异化潜力的维度，也是当前体验最撕裂的维度。核心矛盾：①皮肤制造机强制AI介入 vs 用户想要自由创作——'我做皮肤还要经过你这个AI？'是典型声量；②定制生态闭环缺失——无法二次编辑、无法删除创作记录、无法上架商城被搜到，创作者留存堪忧；③竞品威胁直接——百度第三方皮肤生态远比搜狗成熟，'百度皮转搜狗皮'是高频需求而非偶尔提及。建议优先：修复上传失败+缩略图变形的P0 bug，开放'跳过AI直接上传'入口，支持二次编辑与创作记录管理，逐步建立第三方皮肤导入与分发能力。"
+};
+
+// ========== CUSTOM SKIN RENDER ==========
+function renderCustomSkin() {
+  const container = document.getElementById('customSkinContent');
+  if (!container) return;
+  const d = customSkinData;
+
+  const sevColor = { high: '#f87171', medium: '#fbbf24', low: '#a09ec0' };
+  const sevLabel = { high: 'P0', medium: 'P1', low: 'P2' };
+  const sentIcon = { negative: '🔴', positive: '🟢', neutral: '🟡', mixed: '🟠' };
+  const sentLabel = { negative: '负面', positive: '正面', neutral: '中性', mixed: '混合' };
+  const sentColorMap = { negative: 'var(--negative)', positive: 'var(--positive)', neutral: 'var(--neutral)', mixed: '#ea580c' };
+  const sentBgMap = { negative: 'var(--negative-bg)', positive: 'var(--positive-bg)', neutral: 'var(--neutral-bg)', mixed: '#fff3e0' };
+
+  // Create tab panels for each sentiment
+  const sentiments = ['negative', 'positive', 'neutral'];
+  sentiments.forEach((sent, sentIdx) => {
+    const panel = document.createElement('div');
+    panel.className = 'drill-content' + (sent === 'negative' ? ' active' : '');
+    panel.id = 'customSkinPanel_' + sent;
+
+    // Filter categories by sentiment
+    const filteredCats = d.categories.filter(cat => cat.sentiment === sent || (sent === 'negative' && cat.sentiment === 'mixed'));
+
+    let html = `<div style="padding:20px;">`;
+
+    if (filteredCats.length === 0) {
+      html += `<div style="font-size:13px;color:var(--text-tertiary);padding:20px;text-align:center;">该情感分类下暂无数据</div>`;
+    }
+
+    filteredCats.forEach((cat) => {
+      const sevC = sevColor[cat.severity] || '#6b7280';
+      const sevL = sevLabel[cat.severity] || cat.severity;
+      const sentC = sentColorMap[cat.sentiment] || 'var(--neutral)';
+      const sentBg = sentBgMap[cat.sentiment] || 'var(--neutral-bg)';
+      const sIcon = sentIcon[cat.sentiment] || '🟡';
+      const sLabel = sentLabel[cat.sentiment] || cat.sentiment;
+
+      if (cat.subs && cat.subs.length > 0) {
+        html += `
+          <div class="cat-group-header" style="margin-bottom:14px;margin-top:20px;">
+            <span style="font-size:14px;font-weight:700;color:var(--text);">${cat.name}</span>
+            <span style="font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:${sevC}15;color:${sevC};margin-left:8px;">${sevL}</span>
+            <span style="font-size:11px;padding:3px 8px;border-radius:20px;background:${sentBg};color:${sentC};margin-left:6px;">${sIcon} ${sLabel}</span>
+            <span style="font-size:12px;color:var(--text-tertiary);margin-left:8px;">${cat.count}条</span>
+          </div>
+          <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;padding:10px 12px;background:var(--surface);border-radius:10px;border-left:3px solid ${sevC};">${cat.description}</div>
+        `;
+        html += `<div class="subcat-grid">`;
+        cat.subs.forEach((sub) => {
+          const tc = getTypeColor(cat.sentiment === 'positive' ? '好评' : cat.sentiment === 'negative' ? '差评' : '建议');
+          const exHTML = sub.examples.map(ex => {
+            const truncated = ex.length > 130 ? ex.substring(0, 130) + '…' : ex;
+            return `<div class="example-item">${truncated}</div>`;
+          }).join('');
+          html += `
+            <div class="subcat-card">
+              <div class="subcat-card-head">
+                <span class="subcat-card-name">${sub.name}</span>
+                <span class="subcat-card-count" style="background:${tc.bg};color:${tc.color}">${sub.count}条</span>
+              </div>
+              <div class="subcat-card-body">${exHTML}</div>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      }
+    });
+
+    html += `</div>`;
+    panel.innerHTML = html;
+    container.appendChild(panel);
+  });
+}
+
+// ========== CHANNEL USER PROFILE CARD HELPER ==========
+function renderUserProfileCard(profile, channelName) {
+  const traitTags = (profile.traits || []).map(t =>
+    `<span style="display:inline-block;font-size:10px;padding:3px 10px;border-radius:12px;background:rgba(244,114,182,0.12);color:#db2777;margin:0 4px 4px 0;font-weight:500;">${t}</span>`
+  ).join('');
+  const interestTags = (profile.interests || []).map(t =>
+    `<span style="display:inline-block;font-size:10px;padding:3px 10px;border-radius:12px;background:rgba(129,140,248,0.12);color:#6366f1;margin:0 4px 4px 0;font-weight:500;">${t}</span>`
+  ).join('');
+
+  return `
+    <div style="flex:1;background:linear-gradient(135deg, rgba(244,114,182,0.06) 0%, rgba(251,146,60,0.06) 100%);border-radius:12px;border:1px solid rgba(244,114,182,0.18);padding:14px 16px;">
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">
+        <span style="font-size:14px;">👥</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text);">渠道用户画像特征</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 16px;font-size:11px;">
+        <div>
+          <span style="color:var(--text-tertiary);font-weight:600;">性别分布</span>
+          <div style="color:var(--text-secondary);margin-top:2px;">${profile.gender || '-'}</div>
+        </div>
+        <div>
+          <span style="color:var(--text-tertiary);font-weight:600;">年龄层</span>
+          <div style="color:var(--text-secondary);margin-top:2px;">${profile.age || '-'}</div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <span style="color:var(--text-tertiary);font-weight:600;">用户特质</span>
+          <div style="margin-top:4px;">${traitTags}</div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <span style="color:var(--text-tertiary);font-weight:600;">偏好方向</span>
+          <div style="margin-top:4px;">${interestTags}</div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <span style="color:var(--text-tertiary);font-weight:600;">行为模式</span>
+          <div style="color:var(--text-secondary);line-height:1.6;margin-top:2px;">${profile.behavior || '-'}</div>
+        </div>
+        <div style="grid-column:1/-1;">
+          <span style="color:var(--text-tertiary);font-weight:600;">付费倾向</span>
+          <div style="color:var(--text-secondary);line-height:1.6;margin-top:2px;">${profile.spendLevel || '-'}</div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ========== CHANNEL COMPETITOR RENDER ==========
+function renderChannelCompetitors() {
+  const container = document.getElementById('channelCompetitorContent');
+  if (!container) return;
+
+  const sevColor = { high: '#f87171', medium: '#fbbf24', low: '#a09ec0' };
+  const sevLabel = { high: 'P0', medium: 'P1', low: 'P2' };
+
+  channelCompetitorData.forEach((chData, chIndex) => {
+    const s = chData.sentiment || { positive: 0, negative: 0, neutral: 0 };
+    const total = chData.total || 1;
+    const posPct = (s.positive / total * 100).toFixed(1);
+    const negPct = (s.negative / total * 100).toFixed(1);
+    const neuPct = (s.neutral / total * 100).toFixed(1);
+
+    const chIcons = { '小红书': { bg: '#fe2c55', text: '书' }, '新浪微博': { bg: '#e6162d', text: '微' }, '其他/未标注': { bg: '#8b90a0', text: '其' } };
+    const chIcon = chIcons[chData.channel] || { bg: '#6b7280', text: '渠' };
+
+    const panel = document.createElement('div');
+    panel.className = 'drill-content' + (chIndex === 0 ? ' active' : '');
+    panel.id = 'chCompPanel_' + chIndex;
+
+    let html = `
+      <div style="padding:20px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+          <span style="display:inline-flex;width:28px;height:28px;border-radius:8px;background:${chIcon.bg};color:#fff;font-size:12px;font-weight:700;align-items:center;justify-content:center;">${chIcon.text}</span>
+          <div style="font-size:18px;font-weight:700;color:var(--text);">${chData.channel}</div>
+          <span style="font-size:12px;color:var(--text-tertiary);">竞品提及 ${chData.total} 条</span>
+          <div style="flex:1;"></div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:11px;">
+            <span><span style="color:var(--positive);font-weight:700;">${s.positive}</span> <span style="color:var(--text-tertiary);">正面</span></span>
+            <span><span style="color:var(--neutral);font-weight:700;">${s.neutral}</span> <span style="color:var(--text-tertiary);">中性</span></span>
+            <span><span style="color:var(--negative);font-weight:700;">${s.negative}</span> <span style="color:var(--text-tertiary);">负面</span></span>
+          </div>
+        </div>
+        <div class="compete-sentiment-bar" style="height:8px;border-radius:4px;margin-bottom:14px;">
+          <div style="width:${posPct}%;background:var(--positive);border-radius:4px 0 0 4px;"></div>
+          <div style="width:${neuPct}%;background:var(--neutral);"></div>
+          <div style="width:${negPct}%;background:var(--negative);border-radius:0 4px 4px 0;"></div>
+        </div>
+        <div style="display:flex;gap:14px;margin-bottom:20px;">
+          <div style="flex:1;background:linear-gradient(135deg, rgba(129,140,248,0.08) 0%, rgba(167,139,250,0.08) 100%);border-radius:12px;border:1px solid rgba(129,140,248,0.2);padding:14px 16px;">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px;">
+              <span style="font-size:14px;">📊</span>
+              <span style="font-size:12px;font-weight:700;color:var(--text);">渠道舆情特征</span>
+            </div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.7;white-space:pre-wrap;">${chData.feature}</div>
+          </div>
+          ${chData.userProfile ? renderUserProfileCard(chData.userProfile, chData.channel) : ''}
+        </div>
+    `;
+
+    // Build all sub-items as dual-column cards
+    const allItems = [];
+    if (chData.highlights) {
+      chData.highlights.forEach(hl => { allItems.push({ ...hl, sentiment: 'positive', sentLabel: '好评', sentIcon: '🟢' }); });
+    }
+    if (chData.suggestions) {
+      chData.suggestions.forEach(sg => { allItems.push({ ...sg, sentiment: 'neutral', sentLabel: '建议', sentIcon: '🟡' }); });
+    }
+    if (chData.issues) {
+      chData.issues.forEach(is => { allItems.push({ ...is, sentiment: 'negative', sentLabel: '差评', sentIcon: '🔴' }); });
+    }
+
+    const sentBarColor = { positive: 'var(--positive)', neutral: 'var(--neutral)', negative: 'var(--negative)' };
+    const sentBgColor = { positive: 'var(--positive-bg)', neutral: 'var(--neutral-bg)', negative: 'var(--negative-bg)' };
+
+    html += `<div class="subcat-grid">`;
+    allItems.forEach(item => {
+      const borderColor = sentBarColor[item.sentiment] || 'var(--border)';
+      const tagBg = sentBgColor[item.sentiment] || 'var(--neutral-bg)';
+      const tagColor = sentBarColor[item.sentiment] || 'var(--neutral)';
+      const tc = getTypeColor(item.sentLabel);
+
+      const quotesHTML = (item.quotes || []).map(q => {
+        const qSent = q.sentiment || item.sentLabel;
+        const cls = qSent === '正面' ? 'q-positive' : qSent === '负面' ? 'q-negative' : 'q-neutral';
+        const tagCls = qSent === '正面' ? 't-pos' : qSent === '负面' ? 't-neg' : 't-neu';
+        const truncated = q.text.length > 150 ? q.text.substring(0, 150) + '…' : q.text;
+        return `<div class="compete-quote ${cls}"><span class="compete-quote-tag ${tagCls}">${qSent}</span>${truncated}</div>`;
+      }).join('');
+
+      const sevC = item.severity ? (sevColor[item.severity] || '#6b7280') : null;
+      const sevL = item.severity ? (sevLabel[item.severity] || item.severity) : null;
+
+      html += `
+        <div class="subcat-card">
+          <div class="subcat-card-head">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <span class="subcat-card-name">${item.category}</span>
+              <span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:${tagBg};color:${tagColor};">${item.sentIcon} ${item.sentLabel}</span>
+              ${sevC ? `<span style="font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;background:${sevC}15;color:${sevC};">${sevL}</span>` : ''}
+            </div>
+            <span class="subcat-card-count" style="background:${tc.bg};color:${tc.color}">${item.count}条</span>
+          </div>
+          <div class="subcat-card-body">
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:10px;padding:8px 10px;background:var(--surface);border-radius:8px;border-left:3px solid ${borderColor};">${item.description}</div>
+            ${quotesHTML}
+          </div>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+
+    panel.innerHTML = html;
+    container.appendChild(panel);
+  });
+}
+
+
+
+// ========== INIT ==========
+window.addEventListener('DOMContentLoaded', () => {
+  // Overall word cloud
+  renderSpiralCloud('wordCloud', wordCloudData);
+
+  // Channel word clouds
+  renderSpiralCloud('wc_xhs_pos', chWordData.xhs_pos);
+  renderSpiralCloud('wc_xhs_neg', chWordData.xhs_neg);
+  renderSpiralCloud('wc_wb_pos', chWordData.wb_pos);
+  renderSpiralCloud('wc_wb_neg', chWordData.wb_neg);
+  renderSpiralCloud('wc_other_neg', chWordData.other_neg);
+  renderSpiralCloud('wc_other_neu', chWordData.other_neu);
+
+  // Tab drill-downs
+  renderTabDrill('positiveTabs', 'positiveContent', positiveDrillData, 'positive');
+  renderTabDrill('negativeTabs', 'negativeContent', drillData, 'negative');
+  renderTabDrill('neutralTabs', 'neutralContent', neutralDrillData, 'neutral');
+
+  // Competitor analysis
+  renderCompetitorKPI();
+  renderCompetitorTabs();
+  
+  // Channel competitor analysis
+  renderChannelCompetitors();
+
+  // Custom skin dimension
+  renderCustomSkin();
+
+  // Ensure first tab content is visible for all sections with tabs
+  ensureFirstTabActive(1);
+  ensureFirstTabActive(2);
+  ensureFirstTabActive(3);
+  ensureFirstTabActive(4);
+});
+</script>
+</body>
+</html>

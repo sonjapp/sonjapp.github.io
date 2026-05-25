@@ -3,64 +3,150 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sonja's Page</title>
+<title>Sonja's Portfolio</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   :root {
     --bg: #ededea;
     --white: #ffffff;
     --black: #111111;
-    --accent: #534AB7;
+    --accent: #6366f1;
+    --accent-light: rgba(99,102,241,0.1);
+    --text-secondary: #6b6890;
     --radius: 16px;
+    --shadow: 0 2px 8px rgba(99,102,241,0.08), 0 4px 16px rgba(139,92,246,0.04);
+    --shadow-hover: 0 4px 12px rgba(99,102,241,0.12), 0 8px 24px rgba(139,92,246,0.06);
   }
   body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'PingFang SC', sans-serif;
+    background: linear-gradient(135deg, #f5f0ff 0%, #fff0f5 50%, #f0f8ff 100%);
+    background-attachment: fixed;
     color: var(--black);
     min-height: 100vh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 24px;
+    padding: 40px 24px;
   }
-  .card {
-    background: var(--white);
-    border-radius: var(--radius);
-    max-width: 640px;
-    width: 100%;
-    padding: 48px 40px;
+  .container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  .header {
     text-align: center;
+    margin-bottom: 48px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.5);
+  }
+  .avatar {
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #818cf8, #a78bfa);
+    margin: 0 auto 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 32px; color: #fff; font-weight: 800;
   }
   h1 {
     font-size: 28px;
     font-weight: 700;
-    margin-bottom: 12px;
+    margin-bottom: 8px;
+    letter-spacing: -0.3px;
   }
-  p {
-    font-size: 16px;
-    line-height: 1.7;
-    color: #666;
-    margin-bottom: 24px;
-  }
-  .btn {
-    display: inline-block;
-    background: var(--accent);
-    color: var(--white);
-    padding: 12px 28px;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: 600;
+  .subtitle {
     font-size: 15px;
-    transition: opacity 0.2s;
+    color: var(--text-secondary);
+    line-height: 1.6;
   }
-  .btn:hover { opacity: 0.85; }
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 20px;
+  }
+  .works {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .work-card {
+    background: rgba(255,255,255,0.72);
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.5);
+    padding: 28px;
+    box-shadow: var(--shadow);
+    transition: all 0.25s ease;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    text-decoration: none;
+    color: inherit;
+    display: block;
+  }
+  .work-card:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-3px);
+  }
+  .work-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 14px;
+  }
+  .tag-data { background: rgba(99,102,241,0.12); color: #6366f1; }
+  .tag-design { background: rgba(244,114,182,0.12); color: #ec4899; }
+  .tag-research { background: rgba(52,211,153,0.12); color: #10b981; }
+  .work-card h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.2px;
+  }
+  .work-card p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .work-card .arrow {
+    display: inline-block;
+    margin-top: 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .footer {
+    text-align: center;
+    margin-top: 60px;
+    padding-top: 24px;
+    border-top: 1px solid rgba(255,255,255,0.4);
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  @media (max-width: 600px) {
+    .container { padding: 0; }
+    .work-card { padding: 20px; }
+    h1 { font-size: 24px; }
+  }
 </style>
 </head>
 <body>
-  <div class="card">
-    <h1>Hello, Sonja!</h1>
-    <p>这是我的第一个 GitHub Pages 网页。<br>修改这段文字，换成你想展示的内容吧。</p>
-    <a class="btn" href="https://pages.github.com" target="_blank">了解 GitHub Pages</a>
+  <div class="container">
+    <div class="header">
+      <div class="avatar">S</div>
+      <h1>Sonja</h1>
+      <p class="subtitle">运营设计 · 数据可视化 · 用户体验</p>
+    </div>
+
+    <div class="section-title">作品集</div>
+    <div class="works">
+      <a class="work-card" href="skin-report.html">
+        <span class="work-tag tag-data">数据可视化</span>
+        <h2>搜狗输入法皮肤舆情可视化报告</h2>
+        <p>覆盖小红书、微博等多渠道的皮肤舆情数据可视化分析，包含情感分布、热门话题、竞品对比等多维度洞察。</p>
+        <span class="arrow">查看报告 →</span>
+      </a>
+    </div>
+
+    <div class="footer">© 2026 Sonja · Powered by GitHub Pages</div>
   </div>
 </body>
 </html>
