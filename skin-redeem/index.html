@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>体验元宝30秒领皮肤 · 交互Demo（原图还原）</title>
+<style>
+  :root{
+    --brand:#34c759; --brand-d:#28a745; --ink:#1f2329; --sub:#8a9099;
+    --line:#e8ebf0; --bg:#f4f6f9; --ylb:#ff8c1a;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    background:radial-gradient(1200px 600px at 50% -10%,#eafaf0 0%,#f4f6f9 55%);
+    color:var(--ink); min-height:100vh;
+    display:flex; gap:36px; align-items:flex-start; justify-content:center;
+    padding:32px 24px 60px;
+  }
+
+  /* ---------- 手机外壳 ---------- */
+  .stage{display:flex;flex-direction:column;align-items:center;gap:14px;}
+  .phone{
+    position:relative; width:340px;
+    background:#000; border-radius:46px; padding:11px;
+    box-shadow:0 30px 70px rgba(20,40,30,.28), 0 4px 14px rgba(0,0,0,.18);
+  }
+  .screen{
+    position:relative; width:100%; border-radius:36px; overflow:hidden;
+    background:#fff; aspect-ratio:874/1920;
+  }
+  .page{
+    position:absolute; inset:0; width:100%; height:100%;
+    background-size:100% 100%; background-position:center; background-repeat:no-repeat;
+    display:none; overflow:hidden;
+  }
+  .page.active{display:block;}
+  /* 首页三状态：未完成 / 完成未领取 / 完成已领取（均用原图切换） */
+  .page-home.st-before{background-image:url('assets/home_new.png');}
+  .page-home.st-done{background-image:url('assets/home_done.jpg');}
+  .page-home.st-claimed{background-image:url('assets/home_claimed.jpg');}
+  /* 跑马灯只在「未完成」态显示；完成后原图已是静态皮肤网格 */
+  .page-home:not(.st-before) .marquee{display:none;}
+  /* 完成后 CTA 是灰色「任务已完成」，去掉呼吸动画、改默认光标 */
+  .page-home:not(.st-before) #ctaHot{animation:none; cursor:default;}
+  /* 状态热区组互斥显隐 */
+  .page-home .st-done-only,
+  .page-home .st-claimed-only{display:none;}
+  .page-home.st-done .st-done-only{display:block;}
+  .page-home.st-claimed .st-claimed-only{display:block;}
+  .page-chat{background-image:url('assets/chat.png');}
+  /* 详情页双状态：未解锁(未完成任务) / 已解锁(已完成任务) */
+  .page-detail.locked{background-image:url('assets/detail_locked.png');}
+  .page-detail.unlocked{background-image:url('assets/detail_unlocked.png');}
+  /* 按状态显隐对应热区组 */
+  .page-detail.locked .unlocked-only{display:none;}
+  .page-detail.unlocked .locked-only{display:none;}
+  /* 详情页状态角标 */
+  .detail-badge{
+    position:absolute; z-index:24; right:4%; top:10.5%;
+    font-size:10.5px; font-weight:800; color:#fff; padding:4px 10px; border-radius:20px;
+    box-shadow:0 6px 16px rgba(0,0,0,.18); pointer-events:none; letter-spacing:.3px;
+  }
+  .page-detail.locked .badge-locked{display:inline-block; background:linear-gradient(135deg,#ff9a3c,#ff7a1a);}
+  .page-detail.locked .badge-unlocked{display:none;}
+  .page-detail.unlocked .badge-unlocked{display:inline-block; background:linear-gradient(135deg,#1f9d4e,#34c759);}
+  .page-detail.unlocked .badge-locked{display:none;}
+
+  /* 顶部 App 切换条（标明当前在哪个 App） */
+  .appbar{
+    position:absolute; top:0; left:0; width:100%; z-index:25;
+    display:flex; align-items:center; gap:7px;
+    padding:8px 14px; font-size:11px; font-weight:600; color:#fff;
+    background:linear-gradient(180deg,rgba(0,0,0,.45),rgba(0,0,0,0));
+    pointer-events:none;
+  }
+  .appbar .dot{width:7px;height:7px;border-radius:50%;background:#fff;opacity:.9;}
+  .appbar.yb .dot{background:#ffd54a;}
+
+  /* 透明可点击热区 */
+  .hot{position:absolute; cursor:pointer; border-radius:12px; z-index:5;}
+  .hot:active{background:rgba(52,199,89,.18);}
+  .debug .hot{background:rgba(255,0,80,.22); outline:1px dashed #ff0050;}
+  .pulse{animation:pulse 1.6s ease-in-out infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(52,199,89,0)}50%{box-shadow:0 0 0 6px rgba(52,199,89,.25)}}
+
+  /* ---------- 元宝App内：体验计时浮条 ---------- */
+  .exp-bar{
+    position:absolute; z-index:28; left:4%; width:92%; top:8%;
+    background:rgba(20,28,24,.92); color:#fff; border-radius:16px;
+    padding:10px 12px; display:none; align-items:center; gap:10px;
+    box-shadow:0 12px 30px rgba(0,0,0,.3);
+    backdrop-filter:blur(4px);
+  }
+  .exp-bar.active{display:flex; animation:dropin .35s cubic-bezier(.2,.9,.3,1.3);}
+  @keyframes dropin{from{transform:translateY(-16px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .exp-ring{position:relative;width:38px;height:38px;flex:none;}
+  .exp-ring svg{transform:rotate(-90deg);width:38px;height:38px;}
+  .exp-ring .n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;}
+  .exp-bar .tx{flex:1 1 auto; min-width:0;}
+  .exp-bar .tx b{font-size:12.5px;line-height:1.25;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .exp-bar .tx span{font-size:10.5px;line-height:1.3;margin-top:1px;color:rgba(255,255,255,.65);display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .exp-back{
+    margin-left:auto; flex:none; background:var(--brand); color:#fff; border:none;
+    border-radius:16px; padding:7px 12px; font-size:11.5px; font-weight:700;
+    cursor:pointer; white-space:nowrap; display:none;
+  }
+  .exp-bar.done{background:linear-gradient(135deg,#1f9d4e,#34c759);}
+  .exp-bar.done .exp-back{display:block; animation:pulse 1.4s infinite;}
+
+  /* ---------- 浮层 ---------- */
+  .overlay{
+    position:absolute; inset:0; z-index:30; display:none;
+    align-items:center; justify-content:center; padding:24px;
+    background:rgba(15,25,20,.55); backdrop-filter:blur(3px);
+  }
+  .overlay.active{display:flex;}
+
+  /* 全屏原图登录页（替换原浮层） */
+  .overlay.login-fs{padding:0; background:rgba(0,0,0,.25); align-items:stretch; justify-content:stretch;}
+  .overlay.login-fs .login-bg{
+    position:absolute; inset:0; width:100%; height:100%;
+    background:url('assets/login.png') center/100% 100% no-repeat #fff;
+    animation:loginUp .34s cubic-bezier(.2,.9,.3,1.2);
+  }
+  @keyframes loginUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+  /* 全屏原图·皮肤启用完成页（输入法体验页） */
+  .overlay.applied-fs{padding:0; background:rgba(0,0,0,.25); align-items:stretch; justify-content:stretch;}
+  .overlay.applied-fs .applied-bg{
+    position:absolute; inset:0; width:100%; height:100%;
+    background:url('assets/skin_applied.png') center/100% 100% no-repeat #fff;
+    animation:loginUp .34s cubic-bezier(.2,.9,.3,1.2);
+  }
+  /* 协议勾选选中态：盖一个绿色对勾圈 */
+  .agree-on::after{
+    content:'✓'; position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:15px; height:15px; line-height:15px; text-align:center; font-size:10px; font-weight:900;
+    color:#fff; background:linear-gradient(135deg,#ff9a3c,#ff7a1a); border-radius:50%;
+  }
+
+  .card{
+    width:288px;background:#fff;border-radius:22px;padding:26px 22px 22px;
+    text-align:center;box-shadow:0 24px 60px rgba(0,0,0,.3);
+    animation:pop .32s cubic-bezier(.2,.9,.3,1.3);
+  }
+  @keyframes pop{from{transform:scale(.86) translateY(8px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+  .card .emoji{font-size:46px;line-height:1;margin-bottom:8px;}
+  .card h3{margin:6px 0 6px;font-size:18px;font-weight:800;}
+  .card p{margin:0 0 18px;font-size:13px;color:var(--sub);line-height:1.6;}
+  .skin-preview{width:118px;height:118px;border-radius:18px;margin:4px auto 14px;
+    background:linear-gradient(135deg,#ffd9e6,#ffeaf2);display:flex;align-items:center;justify-content:center;font-size:42px;
+    box-shadow:inset 0 0 0 3px rgba(255,255,255,.6),0 6px 18px rgba(255,150,190,.4);}
+  .btn-row{display:flex;gap:10px;}
+  .btn{flex:1;border:none;border-radius:24px;padding:13px 0;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;}
+  .btn-main{background:var(--brand);color:#fff;box-shadow:0 8px 18px rgba(52,199,89,.4);}
+  .btn-main:active{transform:scale(.97);}
+  .btn-ghost{background:#f0f2f5;color:#555;}
+  .btn-block{width:100%;}
+
+  .confetti{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:hidden;}
+  .confetti i{position:absolute;top:-12px;width:9px;height:14px;opacity:.9;animation:fall linear forwards;border-radius:2px;}
+  @keyframes fall{to{transform:translateY(640px) rotate(560deg);opacity:0}}
+
+  .login{align-items:flex-end;padding:0;}
+  .login .sheet{width:100%;background:#fff;border-radius:22px 22px 0 0;padding:24px 22px 30px;animation:slideup .3s ease;}
+  @keyframes slideup{from{transform:translateY(100%)}to{transform:translateY(0)}}
+  .login h3{margin:0 0 4px;font-size:17px;font-weight:800;text-align:center;}
+  .login p{margin:0 0 18px;font-size:12px;color:var(--sub);text-align:center;}
+
+  /* 领皮肤引导条（回到首页后顶部提示） */
+  .claim-tip{
+    position:absolute; z-index:22; left:4%; width:92%; top:7%;
+    background:linear-gradient(135deg,#fff7e8,#fff);
+    border:1px solid #ffe2b0; border-radius:16px;
+    padding:12px 14px; display:none; align-items:center; gap:10px;
+    box-shadow:0 12px 30px rgba(255,140,0,.18);
+  }
+  .claim-tip.active{display:flex; animation:pop .35s ease;}
+  .claim-tip .ic{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#ffb13c,#ff8c1a);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none;}
+  .claim-tip .tx b{font-size:13px;display:block;color:#b9610a;}
+  .claim-tip .tx span{font-size:11px;color:#c08540;}
+
+  .toast{position:absolute;left:50%;bottom:90px;transform:translateX(-50%) translateY(20px);
+    background:rgba(20,20,20,.86);color:#fff;font-size:13px;padding:10px 18px;border-radius:22px;
+    z-index:60;opacity:0;transition:.3s;pointer-events:none;white-space:nowrap;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .label{font-size:12px;color:var(--sub);}
+
+  /* ---------- 首页·皮肤跑马灯（8款 从右向左循环滚动） ---------- */
+  /* 白底跑马灯：精确卡在原图红框区(卡片区)内 —— 顶部露出原图绿字「体验元宝30s可得以下皮肤1款」，底部留白露出卡片投影 */
+  .marquee{
+    position:absolute; z-index:8;
+    left:2.5%; width:95%;
+    top:32.4%; height:45.5%;
+    background:#ffffff;
+    border-radius:6px;
+    overflow:hidden; padding:0;
+  }
+  .marquee-hd{
+    display:none;  /* 原图绿字已是标题，隐藏自带头部 */
+    align-items:center; gap:6px;
+    padding:0 14px 6px; font-size:12.5px; font-weight:800; color:var(--ink);
+  }
+  .marquee-hd .fire{font-size:13px;}
+  .marquee-hd .cnt{margin-left:auto;font-size:10.5px;font-weight:600;color:var(--brand-d);
+    background:#e8f8ee;padding:2px 8px;border-radius:10px;}
+  /* 视窗：占满白底，上下留少量空余露出卡片投影 */
+  .mq-view{position:relative; width:100%; overflow:hidden; height:100%;
+    padding:5px 0; box-sizing:border-box;
+    display:flex; flex-direction:column; justify-content:center; gap:7px;}
+  .mq-track{
+    display:flex; gap:7px; padding:0 4px; width:max-content;
+    align-items:center;
+    will-change:transform;
+  }
+  /* 双排流：第一排从右向左，第二排从左向右（对流错落） */
+  .mq-track.row-a{animation:mqscrollL 24s linear infinite;}
+  .mq-track.row-b{animation:mqscrollR 28s linear infinite;}
+  /* hover 暂停（移开自动从当前位置继续，纯CSS行为）—— 悬停任意一排暂停整个区域 */
+  .mq-view:hover .mq-track{animation-play-state:paused;}
+  @keyframes mqscrollL{
+    from{transform:translateX(0);}
+    to{transform:translateX(-50%);}   /* 复制一份 → 滚到一半即无缝循环 */
+  }
+  @keyframes mqscrollR{
+    from{transform:translateX(-50%);}
+    to{transform:translateX(0);}       /* 反向 → 视觉从左向右 */
+  }
+  .skin-card{
+    flex:none; width:124px; cursor:pointer;
+    border-radius:12px; overflow:hidden; background:#fff;
+    border:1px solid #eef1f5; box-shadow:0 3px 10px rgba(30,50,40,.08);
+    transition:transform .2s, box-shadow .2s;
+  }
+  .skin-card:hover{transform:translateY(-3px); box-shadow:0 8px 18px rgba(52,199,89,.22); border-color:#bfe9cd;}
+  .skin-card img{display:block; width:100%; height:auto;}
+
+  /* ---------- 右侧流程导航 ---------- */
+  .flow{width:308px;background:#fff;border-radius:20px;padding:22px 20px;box-shadow:0 18px 44px rgba(30,50,40,.1);position:sticky;top:32px;}
+  .flow h2{margin:0 0 4px;font-size:17px;}
+  .flow .desc{margin:0 0 16px;font-size:12px;color:var(--sub);line-height:1.6;}
+  .step{display:flex;gap:12px;align-items:flex-start;padding:11px 12px;border-radius:14px;cursor:pointer;transition:.18s;border:1px solid transparent;}
+  .step:hover{background:#f5fbf7;border-color:#e4f5ea;}
+  .step.cur{background:#ecf9f1;border-color:#bfe9cd;}
+  .step .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--brand);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;}
+  .step.yb .n{background:var(--ylb);}
+  .step .c b{font-size:13.5px;}
+  .step .c p{margin:2px 0 0;font-size:11.5px;color:var(--sub);line-height:1.5;}
+  .flow .line{height:1px;background:var(--line);margin:8px 0;}
+  .flow .tools{display:flex;gap:8px;margin-top:14px;}
+  .flow .tools button{flex:1;font-size:12px;padding:9px 0;border-radius:12px;border:1px solid var(--line);background:#fafbfc;cursor:pointer;color:#555;}
+  .flow .tools button.on{background:#fff0f4;border-color:#ffc4d6;color:#e1356d;}
+  .tag{display:inline-block;font-size:10px;color:var(--brand-d);background:#e8f8ee;padding:2px 8px;border-radius:10px;margin-bottom:10px;}
+</style>
+</head>
+<body>
+
+  <div class="stage">
+    <div class="phone">
+      <div class="screen" id="screen">
+
+        <!-- ① 搜狗输入法 · 活动首页（原图·三状态：st-before未完成 / st-done完成未领取 / st-claimed完成已领取） -->
+        <div class="page page-home st-before active" data-ratio="874/1920" id="pHome">
+          <div class="appbar"><span class="dot"></span>搜狗输入法 · 活动</div>
+
+          <!-- 热区：立即体验元宝（绿色大按钮 / 完成后为灰色「任务已完成」） -->
+          <div class="hot pulse" id="ctaHot" style="left:16%;top:83.8%;width:68%;height:6%;" onclick="onCTA()"></div>
+          <!-- 热区：活动规则 -->
+          <div class="hot" style="left:34%;top:91.3%;width:32%;height:2.6%;" onclick="show('mRule')"></div>
+          <!-- 热区：返回 -->
+          <div class="hot" style="left:2%;top:4.2%;width:11%;height:3.2%;" onclick="toast('返回上一页')"></div>
+
+          <!-- ===== 未完成态：皮肤跑马灯（双排流，每排4款，从右向左循环，hover暂停，离开续滚） ===== -->
+          <div class="marquee">
+            <div class="marquee-hd">
+              <span class="fire">🔥</span><span>热门皮肤·限时领</span>
+              <span class="cnt">共 8 款</span>
+            </div>
+            <div class="mq-view">
+              <div class="mq-track row-a" id="mqTrackA"></div>
+              <div class="mq-track row-b" id="mqTrackB"></div>
+            </div>
+          </div>
+
+          <!-- ===== 完成未领取态：静态皮肤网格「领取」热区（点首张=领取该皮肤） ===== -->
+          <div class="st-done-only">
+            <!-- 粉黛I迷雾「领取」按钮 -->
+            <div class="hot pulse" style="left:23.3%;top:49.6%;width:16.5%;height:4.2%;" onclick="claimSkin('粉黛I迷雾')"></div>
+            <!-- 元气龙龙「领取」按钮 -->
+            <div class="hot pulse" style="left:69.8%;top:49.6%;width:16.5%;height:4.2%;" onclick="claimSkin('元气龙龙')"></div>
+            <!-- 熊猫的每天「领取」按钮 -->
+            <div class="hot pulse" style="left:46.4%;top:72.9%;width:16.5%;height:4.2%;" onclick="claimSkin('熊猫的每天')"></div>
+            <!-- 皮肤卡区域：完成未领取态点卡片进详情·未解锁态（locked），返回回 done 首页 -->
+            <div class="hot" style="left:3%;top:32%;width:45%;height:16%;" onclick="openDetail('粉黛I迷雾',{locked:true,from:'done'})"></div>
+            <div class="hot" style="left:51%;top:32%;width:45%;height:16%;" onclick="openDetail('元气龙龙',{locked:true,from:'done'})"></div>
+            <div class="hot" style="left:3%;top:55.5%;width:45%;height:16%;" onclick="openDetail('熊猫的每天',{locked:true,from:'done'})"></div>
+            <div class="hot" style="left:51%;top:55.5%;width:45%;height:16%;" onclick="openDetail('卡皮巴拉',{locked:true,from:'done'})"></div>
+          </div>
+
+          <!-- ===== 完成已领取态：已领那款「去启用」热区 ===== -->
+          <div class="st-claimed-only">
+            <!-- 粉黛I迷雾「去启用」按钮 → 进入皮肤详情·已解锁页，在详情页点「立即启用」 -->
+            <div class="hot pulse" style="left:23.3%;top:49.6%;width:16.5%;height:4.2%;" onclick="goEnableDetail()"></div>
+            <!-- 其余皮肤卡：点进详情 -->
+            <div class="hot" style="left:51%;top:32%;width:45%;height:16%;" onclick="openDetail('元气龙龙')"></div>
+            <div class="hot" style="left:3%;top:55.5%;width:45%;height:16%;" onclick="openDetail('熊猫的每天')"></div>
+            <div class="hot" style="left:51%;top:55.5%;width:45%;height:16%;" onclick="openDetail('卡皮巴拉')"></div>
+          </div>
+        </div>
+
+        <!-- ④ 皮肤详情页（原图·双状态：locked未解锁 / unlocked已解锁） -->
+        <div class="page page-detail locked" data-ratio="1284/2778" id="pDetail">
+          <div class="appbar"><span class="dot"></span>搜狗输入法 · 皮肤详情</div>
+          <!-- 状态角标 -->
+          <span class="detail-badge badge-locked">🔒 未解锁 · 完成任务可领</span>
+          <span class="detail-badge badge-unlocked">✓ 已解锁</span>
+
+          <!-- 热区：左上返回 → 回活动首页（两状态通用） -->
+          <div class="hot pulse" style="left:2%;top:1.6%;width:10%;height:2.4%;" onclick="backFromDetail()"></div>
+          <!-- 热区：右上分享（locked图右上有?和分享） -->
+          <div class="hot" style="left:88%;top:1.6%;width:10%;height:2.4%;" onclick="toast('分享给好友')"></div>
+
+          <!-- ===== 未解锁态底部：收藏 / 送礼 / ¥8.0购买 / VIP免费用 ===== -->
+          <div class="locked-only">
+            <div class="hot" style="left:3%;top:90.8%;width:9%;height:5%;" onclick="toast('已收藏 ❤')"></div>
+            <div class="hot" style="left:13%;top:90.8%;width:9%;height:5%;" onclick="toast('送礼给好友 🎁')"></div>
+            <!-- ¥8.0 购买 -->
+            <div class="hot" style="left:43%;top:90.8%;width:24.5%;height:5%;" onclick="detailGet()"></div>
+            <!-- VIP 免费用 -->
+            <div class="hot" style="left:68%;top:90.8%;width:29%;height:5%;" onclick="toast('开通 VIP 可免费用此皮肤')"></div>
+          </div>
+
+          <!-- ===== 已解锁态底部：已购买 / 立即启用 ===== -->
+          <div class="unlocked-only">
+            <!-- 立即启用（橙色大按钮） -->
+            <div class="hot pulse" style="left:72%;top:90.8%;width:25%;height:5%;" onclick="enableSkin()"></div>
+          </div>
+        </div>
+
+        <!-- ③ 元宝 App · 对话页（原图） -->
+        <div class="page page-chat" data-ratio="756/1616" id="pChat">
+          <div class="appbar yb"><span class="dot"></span>已跳转 · 腾讯元宝</div>
+
+          <!-- 元宝App内体验计时浮条 -->
+          <div class="exp-bar" id="expBar">
+            <div class="exp-ring">
+              <svg width="42" height="42">
+                <circle cx="21" cy="21" r="17" stroke="rgba(255,255,255,.2)" stroke-width="4" fill="none"/>
+                <circle id="expRing" cx="21" cy="21" r="17" stroke="#34c759" stroke-width="4" fill="none"
+                  stroke-linecap="round" stroke-dasharray="106.8" stroke-dashoffset="0"/>
+              </svg>
+              <div class="n" id="expNum">30</div>
+            </div>
+            <div class="tx" id="expTx">
+              <b>正在体验元宝 AI…</b>
+              <span>停留满 30 秒即可返回领皮肤</span>
+            </div>
+            <button class="exp-back" onclick="backToClaim()">返回领皮肤</button>
+          </div>
+
+          <!-- 热区：三个推荐话题（点击=在元宝里体验，与计时无关，纯交互） -->
+          <div class="hot" style="left:6%;top:67.5%;width:50%;height:3.5%;" onclick="toast('正在体验元宝 AI…')"></div>
+          <div class="hot" style="left:6%;top:73%;width:56%;height:3.5%;" onclick="toast('正在体验元宝 AI…')"></div>
+          <div class="hot" style="left:6%;top:78.6%;width:62%;height:3.5%;" onclick="toast('正在体验元宝 AI…')"></div>
+          <!-- 热区：返回（左上角，未满30s提示） -->
+          <div class="hot" style="left:1.5%;top:0.5%;width:10%;height:3%;" onclick="tryLeaveYB()"></div>
+        </div>
+
+        <!-- 领取确认（第1个弹窗：确认领取对象） -->
+        <div class="overlay" id="mConfirm">
+          <div class="card">
+            <h3>领取确认</h3>
+            <p>确认领取“<b id="confirmSkinName" style="color:var(--ink)">熊猫的每天</b>”这款皮肤？</p>
+            <div class="btn-row">
+              <button class="btn btn-ghost" onclick="hide('mConfirm')">再想想</button>
+              <button class="btn btn-main" onclick="confirmClaim()">确认</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 领取成功（第2个弹窗：领取成功提示） -->
+        <div class="overlay" id="mSuccess">
+          <div class="confetti" id="confetti"></div>
+          <div class="card">
+            <div class="skin-preview" id="okSkin">🌸</div>
+            <h3>领取成功</h3>
+            <p>恭喜你获得“<b id="okSkinName" style="color:var(--ink)">熊猫的每天</b>”这款皮肤！快去启用皮肤吧～</p>
+            <div class="btn-row">
+              <button class="btn btn-ghost" onclick="continueExp()">暂不启用</button>
+              <button class="btn btn-main" onclick="useNow()">去皮肤详情启用</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 皮肤启用完成页（全屏原图 skin_applied.png · 输入法体验页） -->
+        <div class="overlay applied-fs" id="mApplied">
+          <div class="applied-bg">
+            <!-- 热区：左上关闭 X → 回详情页·已解锁态 -->
+            <div class="hot pulse" style="left:2.5%;top:4.6%;width:9%;height:3.4%;" onclick="closeApplied()"></div>
+          </div>
+        </div>
+
+        <!-- 登录页（全屏原图 login.png · 一键登录） -->
+        <div class="overlay login-fs" id="mLogin">
+          <div class="login-bg">
+            <!-- 热区：关闭 X（右上） -->
+            <div class="hot" style="left:78%;top:0.6%;width:8%;height:2.6%;" onclick="hide('mLogin')"></div>
+            <!-- 热区：一键登录（橙色大按钮） -->
+            <div class="hot pulse" style="left:17.3%;top:48.5%;width:65%;height:5%;" onclick="doLogin()"></div>
+            <!-- 热区：短信验证 -->
+            <div class="hot" style="left:38%;top:55.5%;width:24%;height:3.2%;" onclick="smsLogin()"></div>
+            <!-- 热区：协议勾选圈 -->
+            <div class="hot" style="left:18%;top:60.5%;width:7%;height:2.6%;" onclick="toggleAgree(this)"></div>
+          </div>
+        </div>
+
+        <!-- 规则弹层 -->
+        <div class="overlay" id="mRule">
+          <div class="card" style="text-align:left;width:300px;">
+            <h3 style="text-align:center;">活动规则</h3>
+            <p style="text-align:left;color:#555;font-size:12.5px;line-height:1.85;">
+              1. 活动时间：6.01 – 6.15。<br>
+              2. 点击「立即体验元宝」跳转腾讯元宝 App。<br>
+              3. 在元宝内体验满 30 秒，返回本页可领皮肤 1 款。<br>
+              4. 每位用户活动期间限领 1 款。<br>
+              5. 中途离开元宝、未满 30 秒，需重新体验。<br>
+              6. 领取的皮肤实时接入搜狗输入法键盘。<br>
+              7. 本活动最终解释权归主办方所有。
+            </p>
+            <button class="btn btn-main btn-block" style="margin-top:6px;" onclick="hide('mRule')">我知道了</button>
+          </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+      </div>
+    </div>
+    <div class="label">真机比例 · 点击高亮区可交互</div>
+  </div>
+
+  <!-- 右侧流程导航 -->
+  <div class="flow">
+    <span class="tag">原图还原 · 跨App导流领皮肤</span>
+    <h2>体验元宝 30 秒领皮肤</h2>
+    <p class="desc">搜狗活动页 →（跳转）元宝 App 体验 30s → 返回搜狗领皮肤。首页随任务进度切换三种状态：<b>未完成</b>（体验30秒按钮）、<b>完成未领取</b>（恭喜获得1款/任务已完成）、<b>完成已领取</b>（已获得1款/去启用）。</p>
+
+    <div class="step cur" data-go="pHome" onclick="go('pHome')">
+      <div class="n">1</div><div class="c"><b>搜狗 · 活动首页</b><p>皮肤换新装，点「立即体验元宝」</p></div>
+    </div>
+    <div class="step" onclick="show('mLogin')">
+      <div class="n">2</div><div class="c"><b>登录判断</b><p>未登录 → 底部登录浮层</p></div>
+    </div>
+    <div class="step yb" data-go="pChat" onclick="gotoYB()">
+      <div class="n">3</div><div class="c"><b>跳转元宝 App</b><p>进入元宝对话页，开始 30s 体验计时</p></div>
+    </div>
+    <div class="step yb" onclick="forceDone()">
+      <div class="n">4</div><div class="c"><b>体验满 30 秒</b><p>计时条变绿，出现「返回领皮肤」</p></div>
+    </div>
+    <div class="step" data-go="pHome" onclick="backToClaim()">
+      <div class="n">5</div><div class="c"><b>返回搜狗·完成未领取</b><p>标题「恭喜你，获得皮肤1款！」按钮灰「任务已完成」，皮肤卡可领取</p></div>
+    </div>
+    <div class="step" onclick="claimSkin('粉黛I迷雾')">
+      <div class="n">6</div><div class="c"><b>领取成功·已领取态</b><p>标题「已获得皮肤1款！」，该款变「去启用」</p></div>
+    </div>
+    <div class="line"></div>
+    <div class="step" onclick="gotoHomeState('before')">
+      <div class="n">A</div><div class="c"><b>首页·未完成</b><p>跑马灯滚动 + 绿「立即体验元宝·30秒」</p></div>
+    </div>
+    <div class="step" onclick="gotoHomeState('done')">
+      <div class="n">B</div><div class="c"><b>首页·完成未领取</b><p>恭喜你，获得皮肤1款 + 灰「任务已完成」</p></div>
+    </div>
+    <div class="step" onclick="gotoHomeState('claimed')">
+      <div class="n">C</div><div class="c"><b>首页·完成已领取</b><p>恭喜你，已获得皮肤1款 + 首款「去启用」</p></div>
+    </div>
+    <div class="line"></div>
+    <div class="step" onclick="previewDetail(false)">
+      <div class="n">＋</div><div class="c"><b>皮肤详情页·未解锁</b><p>未完成任务点皮肤卡 → ¥8.0购买/VIP免费用</p></div>
+    </div>
+    <div class="step" onclick="previewDetail(true)">
+      <div class="n">✓</div><div class="c"><b>皮肤详情页·已解锁</b><p>完成任务点皮肤卡 → 已购买/立即启用</p></div>
+    </div>
+    <div class="tools">
+      <button onclick="reset()">↺ 重置流程</button>
+      <button id="dbg" onclick="toggleDebug()">显示热区</button>
+    </div>
+  </div>
+
+<script>
+  var screen = document.getElementById('screen');
+  var state = { logged:false, expDone:false, claimed:false, skin:'粉黛I迷雾', emoji:'🌸', detailFrom:null, detailLocked:null };
+  var skinEmoji = {'粉黛I迷雾':'🌸','元气龙龙':'🐉','熊猫的每天':'🐼','卡皮巴拉':'🦫','梦幻森林':'🌳','昂然依依':'🕊️'};
+
+  // 首页三状态切换：'before'未完成 / 'done'完成未领取 / 'claimed'完成已领取
+  function setHomeState(s){
+    var p=document.getElementById('pHome');
+    p.classList.remove('st-before','st-done','st-claimed');
+    p.classList.add('st-'+s);
+  }
+
+  // 8 款皮肤（按用户切好的卡片顺序）—— 图卡已自带名称+价格，不再叠加文字
+  var SKINS=[
+    {img:'assets/skin/s0.png', name:'梦幻森林'},
+    {img:'assets/skin/s1.png', name:'粉黛I迷雾'},
+    {img:'assets/skin/s2.png', name:'元气龙龙'},
+    {img:'assets/skin/s3.png', name:'梦幻森林'},
+    {img:'assets/skin/s4.png', name:'昂然依依'},
+    {img:'assets/skin/s5.png', name:'熊猫的每天'},
+    {img:'assets/skin/s6.png', name:'卡皮巴拉'},
+    {img:'assets/skin/s7.png', name:'昂然依依'}
+  ];
+  // 渲染双排跑马灯：每排4款，各自复制一份 → 无缝循环；上排右→左、下排左→右
+  function buildMarquee(){
+    var ta=document.getElementById('mqTrackA');
+    var tb=document.getElementById('mqTrackB');
+    if(!ta||!tb) return;
+    var rowA=SKINS.slice(0,4), rowB=SKINS.slice(4,8);
+    function render(arr){
+      var html='';
+      for(var k=0;k<2;k++){          // 复制两遍 → translateX 50% 无缝
+        arr.forEach(function(s){
+          html+='<div class="skin-card" onclick="openDetail(\''+s.name+'\')">'
+              +'<img src="'+s.img+'" alt="'+s.name+'"></div>';
+        });
+      }
+      return html;
+    }
+    ta.innerHTML=render(rowA);
+    tb.innerHTML=render(rowB);
+  }
+
+  function setRatio(id){
+    var p = document.getElementById(id);
+    if(p && p.dataset.ratio){ screen.style.aspectRatio = p.dataset.ratio; }
+  }
+  function go(id){
+    document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
+    var p = document.getElementById(id); if(p){p.classList.add('active'); setRatio(id);}
+    document.querySelectorAll('.step').forEach(function(s){s.classList.remove('cur');});
+    var cur = document.querySelector('.step[data-go="'+id+'"]'); if(cur) cur.classList.add('cur');
+    closeAll();
+  }
+  function show(id){ var m=document.getElementById(id); if(m) m.classList.add('active'); }
+  function hide(id){ var m=document.getElementById(id); if(m) m.classList.remove('active'); }
+  function closeAll(){ document.querySelectorAll('.overlay').forEach(function(m){m.classList.remove('active');}); }
+
+  function toast(t){
+    var el=document.getElementById('toast'); el.textContent=t; el.classList.add('show');
+    clearTimeout(el._t); el._t=setTimeout(function(){el.classList.remove('show');},1600);
+  }
+
+  // ① 首页点 CTA「立即体验元宝」（完成后为「任务已完成」灰按钮，点击无效）
+  function onCTA(){
+    if(state.expDone){ toast('任务已完成'); return; }
+    if(!state.logged){ show('mLogin'); return; }
+    gotoYB(); // 已登录 → 跳转元宝App
+  }
+
+  // ② 登录页（全屏原图）
+  var agreed=false;
+  function toggleAgree(el){
+    agreed=!agreed;
+    el.classList.toggle('agree-on', agreed);
+  }
+  function doLogin(){
+    if(!agreed){ toast('请先勾选并同意相关协议'); return; }
+    state.logged = true; hide('mLogin'); toast('一键登录成功');
+    setTimeout(function(){ gotoYB(); }, 350);
+  }
+  function smsLogin(){
+    if(!agreed){ toast('请先勾选并同意相关协议'); return; }
+    state.logged = true; hide('mLogin'); toast('短信验证登录成功');
+    setTimeout(function(){ gotoYB(); }, 350);
+  }
+
+  // ③ 跳转元宝App，开始30秒体验计时
+  var et=null, eleft=30, ECIRC=106.8;
+  function gotoYB(){
+    toast('正在跳转腾讯元宝…');
+    setTimeout(function(){
+      go('pChat');
+      startExp();
+    }, 600);
+  }
+  function startExp(){
+    eleft=30;
+    var bar=document.getElementById('expBar');
+    bar.classList.add('active'); bar.classList.remove('done');
+    document.getElementById('expTx').innerHTML='<b>正在体验元宝 AI…</b><span>停留满 30 秒即可返回领皮肤</span>';
+    expTick();
+    clearInterval(et);
+    et=setInterval(function(){ eleft--; expTick(); if(eleft<=0){ expFinish(); } }, 200); // 演示加速
+  }
+  function expTick(){
+    document.getElementById('expNum').textContent = eleft>0?eleft:0;
+    var off = ECIRC*(1 - eleft/30);
+    document.getElementById('expRing').style.strokeDashoffset = off;
+  }
+  function expFinish(){
+    clearInterval(et); state.expDone=true;
+    var bar=document.getElementById('expBar'); bar.classList.add('done');
+    document.getElementById('expNum').textContent='✓';
+    document.getElementById('expRing').style.strokeDashoffset=0;
+    document.getElementById('expTx').innerHTML='<b>已体验 30 秒，达成！</b><span>返回搜狗输入法领取皮肤</span>';
+    toast('体验完成 🎉');
+  }
+  // 流程导航跳到「体验满30秒」节点：直接置完成态
+  function forceDone(){
+    go('pChat');
+    var bar=document.getElementById('expBar'); bar.classList.add('active');
+    clearInterval(et); eleft=0; state.expDone=true;
+    expFinish();
+  }
+  // 元宝页未满30s想返回
+  function tryLeaveYB(){
+    if(!state.expDone){ toast('还没满 30 秒，离开将无法领皮肤'); }
+    else { backToClaim(); }
+  }
+  // 返回搜狗领皮肤 → 首页切到「完成未领取」态
+  function backToClaim(){
+    clearInterval(et);
+    document.getElementById('expBar').classList.remove('active');
+    go('pHome');
+    if(state.expDone){
+      setHomeState(state.claimed ? 'claimed' : 'done');
+      toast(state.claimed ? '皮肤已领取，可去启用' : '任务完成，选 1 款皮肤领取吧');
+    }
+  }
+
+  // 读取当前首页态（用于「返回来时页面」）
+  function currentHomeState(){
+    var p=document.getElementById('pHome');
+    if(p.classList.contains('st-claimed')) return 'claimed';
+    if(p.classList.contains('st-done')) return 'done';
+    return 'before';
+  }
+  // ④ 皮肤卡 → 进入详情页（任意状态都可点，无需登录 / 无需完成任务）
+  //    opts.locked: true=强制未解锁 / false=强制已解锁 / 不传=按 expDone 自动
+  //    opts.from  : 返回时要恢复的首页态；不传则自动记录进入前的当前首页态
+  function openDetail(name, opts){
+    opts = opts || {};
+    state.skin = name; state.emoji = skinEmoji[name]||'🎨';
+    state.detailFrom   = (opts.from !== undefined) ? opts.from : currentHomeState();
+    state.detailLocked = (opts.locked !== undefined) ? opts.locked : null;
+    applyDetailState();
+    go('pDetail');
+  }
+  // 切换详情页背景图 + 底部按钮组（显式 detailLocked 优先，否则按是否完成任务）
+  function applyDetailState(){
+    var p=document.getElementById('pDetail');
+    var locked = (state.detailLocked === true || state.detailLocked === false)
+                 ? state.detailLocked : !state.expDone;
+    if(locked){ p.classList.add('locked'); p.classList.remove('unlocked'); }
+    else { p.classList.add('unlocked'); p.classList.remove('locked'); }
+  }
+  // 详情页返回 → 回到来时的首页态（detailFrom）；无记录则按 expDone/claimed 兜底
+  function backFromDetail(){
+    go('pHome');
+    if(state.detailFrom){ setHomeState(state.detailFrom); }
+    else if(state.expDone){ setHomeState(state.claimed ? 'claimed' : 'done'); }
+  }
+  // 未解锁态底部「¥8.0 购买」
+  function detailGet(){
+    if(!state.logged){ go('pHome'); show('mLogin'); return; }
+    if(!state.expDone){
+      toast('完成任务（体验元宝 30 秒）即可免费领此皮肤');
+      go('pHome'); onCTA(); return;
+    }
+    openSuccess(); // 已登录且已完成任务 → 直接领取成功
+  }
+  // 已解锁态底部「立即启用」→ 打开全屏「皮肤启用完成页」（输入法体验页）
+  function enableSkin(){
+    state.claimed = true;
+    show('mApplied');
+  }
+  // 皮肤启用完成页点左上「关闭」→ 回到皮肤详情页·已解锁态
+  function closeApplied(){
+    hide('mApplied');
+    state.expDone = true;
+    state.detailLocked = false;   // 启用后一定是已解锁态
+    applyDetailState();   // 确保详情页保持已解锁态
+    go('pDetail');
+  }
+  // 首页「完成已领取」态点「去启用」→ 进入皮肤详情·已解锁页（不在首页直接启用）
+  //   在详情页点底部「立即启用」才真正生效
+  function goEnableDetail(){
+    state.expDone = true;          // 已领取 = 任务已完成 → 详情走已解锁态
+    if(!state.logged) state.logged = true;
+    openDetail(state.skin || '粉黛I迷雾', {locked:false, from:'claimed'});
+    toast('点击下方「立即启用」即可使用该皮肤');
+  }
+  // 流程导航：直接走查详情页某一状态（false=未解锁 true=已解锁）
+  function previewDetail(unlocked){
+    state.expDone = !!unlocked;
+    if(unlocked && !state.logged) state.logged = true; // 已解锁态默认已登录
+    openDetail(state.skin||'粉黛I迷雾', {locked:!unlocked, from:(unlocked?'claimed':'done')});
+    toast(unlocked?'详情页·已解锁态（已完成任务）':'详情页·未解锁态（未完成任务）');
+  }
+
+  // ⑤ 首页「完成未领取」态点皮肤卡「领取」→ 先弹「领取确认」弹窗
+  function claimSkin(name){
+    state.skin = name; state.emoji = skinEmoji[name]||'🎨';
+    document.getElementById('confirmSkinName').textContent = name;
+    show('mConfirm');
+  }
+  // 兼容旧调用名
+  function pickSkin(name){ claimSkin(name); }
+  // 「领取确认」弹窗点「确认」→ 真正领取 → 弹「领取成功」
+  function confirmClaim(){
+    hide('mConfirm');
+    state.claimed = true;
+    openSuccess();
+  }
+
+  // ⑥ 领取成功
+  function openSuccess(){
+    document.getElementById('okSkin').textContent = state.emoji;
+    document.getElementById('okSkinName').textContent = state.skin;
+    var pv=document.getElementById('okSkin');
+    var palette={'🌸':'linear-gradient(135deg,#ffd9e6,#ffeaf2)','🐉':'linear-gradient(135deg,#ffe7c2,#fff6e6)','🐼':'linear-gradient(135deg,#f0d9ff,#f8eeff)','🦫':'linear-gradient(135deg,#e7d6c2,#f6ede2)'};
+    pv.style.background = palette[state.emoji]||palette['🌸'];
+    show('mSuccess'); blast();
+  }
+  function blast(){
+    var box=document.getElementById('confetti'); box.innerHTML='';
+    var cols=['#34c759','#ff8fb1','#ffd66b','#5ac8fa','#ff7a7a','#b388ff'];
+    for(var i=0;i<46;i++){
+      var s=document.createElement('i');
+      s.style.left=Math.random()*100+'%';
+      s.style.background=cols[i%cols.length];
+      s.style.animationDuration=(1.6+Math.random()*1.4)+'s';
+      s.style.animationDelay=(Math.random()*.5)+'s';
+      box.appendChild(s);
+    }
+  }
+  // 领取成功弹窗点「去皮肤详情启用」→ 进皮肤详情·已解锁页，在详情页点「立即启用」
+  function useNow(){
+    hide('mSuccess');
+    state.claimed=true; state.expDone=true;
+    if(!state.logged) state.logged=true;
+    openDetail(state.skin || '粉黛I迷雾', {locked:false, from:'claimed'});
+    toast('点击下方「立即启用」即可使用该皮肤');
+  }
+  // 领取成功弹窗点「暂不启用」→ 跳转「首页·完成已领取」页
+  function continueExp(){
+    hide('mSuccess');
+    state.expDone = true; state.claimed = true;
+    go('pHome'); setHomeState('claimed');
+    toast('皮肤已领取，可去启用');
+  }
+
+  // 工具
+  function reset(){
+    state={logged:false,expDone:false,claimed:false,skin:'粉黛I迷雾',emoji:'🌸',detailFrom:null,detailLocked:null};
+    clearInterval(et); eleft=30; closeAll();
+    document.getElementById('expBar').classList.remove('active','done');
+    go('pHome'); setHomeState('before'); toast('已重置到活动首页');
+  }
+  function toggleDebug(){
+    screen.classList.toggle('debug');
+    var b=document.getElementById('dbg'); b.classList.toggle('on');
+    b.textContent = screen.classList.contains('debug')?'隐藏热区':'显示热区';
+  }
+  // 流程导航：直接走查首页某一状态
+  function gotoHomeState(s){
+    if(s==='before'){ state.expDone=false; state.claimed=false; }
+    else if(s==='done'){ state.logged=true; state.expDone=true; state.claimed=false; }
+    else if(s==='claimed'){ state.logged=true; state.expDone=true; state.claimed=true; state.skin='粉黛I迷雾'; state.emoji='🌸'; }
+    go('pHome'); setHomeState(s);
+    var tips={before:'首页·未完成任务',done:'首页·完成未领取',claimed:'首页·完成已领取'};
+    toast(tips[s]);
+  }
+
+  setRatio('pHome');
+  buildMarquee();
+  setHomeState('before');
+</script>
+</body>
+</html>
